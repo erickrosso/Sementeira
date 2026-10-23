@@ -506,12 +506,12 @@ async function plantnet(img){
     var url=PN.proxy||('https://my-api.plantnet.org/v2/identify/all?lang=pt&nb-results=3&api-key='+encodeURIComponent(PN.key));
     var res=await fetch(url,{method:'POST',body:fd});
     if(res.status==404)return {rej:true};
-    if(!res.ok)return null;
+    if(!res.ok){var tx='';try{tx=(await res.text()).slice(0,90)}catch(e2){}return {err:'HTTP '+res.status+(tx?' '+tx:'')}}
     var j=await res.json(),r0=j.results&&j.results[0];
     if(!r0||r0.score<.1)return {rej:true};
     var sp=r0.species||{},fam=(sp.family&&sp.family.scientificNameWithoutAuthor)||'',po=j.predictedOrgans&&j.predictedOrgans[0],org=(po&&po.organ)||'';
     return {t:mapType(fam,org),n:String((sp.commonNames&&sp.commonNames[0])||sp.scientificNameWithoutAuthor||'').slice(0,30),score:r0.score};
-  }catch(e){return null}
+  }catch(e){return {err:'rede ou CORS ('+(e&&e.message?e.message:e)+')'}}
 }
 $('pnc').hidden=!(PN.proxy||PN.key);
 $('file').onchange=async function(e){
@@ -527,6 +527,7 @@ $('file').onchange=async function(e){
         setModelStatus((PN.proxy||PN.key)?'Não consegui falar com o Pl@ntNet. Verifique a conexão e tente de novo.':'Pl@ntNet não configurado: preencha a chave ou o proxy no arquivo.',true);
         return;
       }
+      if(pn.err){setModelStatus('Pl@ntNet falhou: '+pn.err,true);return}
       if(pn.rej){
         setModelStatus('O Pl@ntNet não reconheceu uma planta nesta foto. Tente uma imagem nítida, com a planta em destaque.',true);
         say('Foto rejeitada: não parece uma planta. Nenhuma semente foi criada.','warn');renderPlots();return;

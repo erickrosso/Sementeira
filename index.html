@@ -97,7 +97,7 @@ label.btn input{position:absolute;inset:0;width:100%;height:100%;opacity:0;curso
     <div class="row" style="margin-bottom:6px"><label class="btn">Foto da planta<input type="file" id="file" accept="image/*"></label>
     <button class="ghost" id="rand">Sementes aleatórias</button></div>
     <p id="pnc" class="mute" style="font-size:12px;margin-bottom:6px" hidden>Identificação de plantas com apoio do Pl@ntNet (my.plantnet.org).</p>
-    <p id="modelStatus" class="mute" style="margin-bottom:10px">A foto é analisada pelo Claude (pede sua permissão na primeira vez).</p>
+    <p id="modelStatus" class="mute" style="margin-bottom:10px">A foto é identificada pelo Pl@ntNet.</p>
     <div id="seeds"></div>
   </div>
   <h2>Cruzamento</h2>
@@ -473,7 +473,6 @@ $('test').onchange=function(){check();render()};
 
 /* ---- reconhecimento da foto com o Claude ---- */
 var TYPES=['flor','arvore','erva','cacto','suculenta','samambaia'],busy=false;
-var PROMPT='Você analisa fotos para um jogo de plantas. Responda SOMENTE com JSON, sem texto extra, neste formato: {"planta":true,"tipo":"flor","nome":"nome popular em português, até 3 palavras","cor_flor":"#rrggbb","cor_folha":"#rrggbb"}. "planta" é false se a foto não mostra uma planta viva (animais, pessoas, objetos, comida, desenhos). "tipo" é um de: flor, arvore (árvores, palmeiras, arbustos grandes), erva (plantas herbáceas e folhagens em geral), cacto, suculenta, samambaia. "cor_flor" é a cor das flores ou, se não houver, das partes mais vistosas. "cor_folha" é a cor predominante das folhas.';
 function setModelStatus(msg,isWarn){
   var el=$('modelStatus');
   if(el){el.textContent=msg;el.className=isWarn?'warn':'mute'}
@@ -515,24 +514,6 @@ async function plantnet(img){
   }catch(e){return null}
 }
 $('pnc').hidden=!(PN.proxy||PN.key);
-var warmP=null;
-function warm(){
-  if(!warmP)warmP=(async function(){
-    var s=null,l=null;
-    try{s=window.claude?await claude.use('sample'):null}catch(e){}
-    if(!s){warmP=null;return null}
-    try{l=await s.limits()}catch(e){}
-    if(!l||!l.images){warmP=null;return null}
-    return s;
-  })();
-  return warmP;
-}
-async function recognize(img){
-  var pr=warm(),blob=await shrink(img,512),sample=await pr;
-  if(!sample)return {off:true};
-  return await sample.json(PROMPT,{images:[blob],modelTier:'quick',cache:false});
-}
-document.querySelector('label.btn').addEventListener('click',function(){warm()});
 $('file').onchange=async function(e){
   var f=e.target.files&&e.target.files[0];e.target.value='';
   if(!f||busy)return;
@@ -541,30 +522,19 @@ $('file').onchange=async function(e){
   img.onerror=function(){URL.revokeObjectURL(u);busy=false;setModelStatus('Não consegui abrir a foto. Tente outra imagem.',true)};
   img.onload=async function(){
     try{
-      var seed=analyze(img),pn=await plantnet(img),r=pn?null:await recognize(img);
-      if(pn&&pn.rej){
+      var seed=analyze(img),pn=await plantnet(img);
+      if(!pn){
+        setModelStatus((PN.proxy||PN.key)?'Não consegui falar com o Pl@ntNet. Verifique a conexão e tente de novo.':'Pl@ntNet não configurado: preencha a chave ou o proxy no arquivo.',true);
+        return;
+      }
+      if(pn.rej){
         setModelStatus('O Pl@ntNet não reconheceu uma planta nesta foto. Tente uma imagem nítida, com a planta em destaque.',true);
         say('Foto rejeitada: não parece uma planta. Nenhuma semente foi criada.','warn');renderPlots();return;
       }
-      if(pn){
-        seed.t=pn.t;seed.n=pn.n;
-        if(seed.t=='flor'&&seed.f=='#9bc98a')seed.f='#e84a7f';
-        if(seed.t=='samambaia')seed.l=4;
-        setModelStatus('Pl@ntNet: '+(pn.n||names[pn.t])+' ('+Math.round(pn.score*100)+'%).');
-      }else if(r&&r.off){
-        setModelStatus('IA indisponível aqui. Usei só a análise de cores.',true);
-      }else if(!r||typeof r!='object'||r.planta!==true){
-        setModelStatus('Não reconheci uma planta nesta foto. Tente uma imagem nítida, com a planta em destaque.',true);
-        say('Foto rejeitada: não parece uma planta. Nenhuma semente foi criada.','warn');renderPlots();return;
-      }else{
-        if(TYPES.indexOf(r.tipo)>=0)seed.t=r.tipo;
-        if(okHex(r.cor_folha))seed.g=r.cor_folha;
-        if(okHex(r.cor_flor))seed.f=r.cor_flor;
-        else if(seed.t=='flor'&&seed.f=='#9bc98a')seed.f='#e84a7f';
-        if(seed.t=='samambaia')seed.l=4;
-        seed.n=String(r.nome||'').slice(0,30);
-        setModelStatus('Reconhecida: '+(seed.n||names[seed.t].toLowerCase())+'.');
-      }
+      seed.t=pn.t;seed.n=pn.n;
+      if(seed.t=='flor'&&seed.f=='#9bc98a')seed.f='#e84a7f';
+      if(seed.t=='samambaia')seed.l=4;
+      setModelStatus('Pl@ntNet: '+(pn.n||names[pn.t])+' ('+Math.round(pn.score*100)+'%).');
       st.seeds.push(seed);save();render();
       say('Nova semente criada: '+names[seed.t].toLowerCase()+'.');
     }catch(err){

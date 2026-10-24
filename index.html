@@ -310,7 +310,8 @@ function fern2(seed,stage,wl,gi,PC){
   if(stage==4)s+=dots(100,190-H2,PC,12,3);
   return s;
 }
-function draw(seed,stage,wl,so){
+function draw(seed,stage,wl,so,uid){var o=draw0(seed,stage,wl,so);return uid?o.replace(/(id="|url\(#)(lg|pg|sg)/g,'$1'+uid+'$2'):o}
+function draw0(seed,stage,wl,so){
   var G=seed.g,PC=pcOf(seed),sz=seed.sz||1,sc=SOILC[so==null?2:so],gi='url(#lg'+G.slice(1)+')',pi='url(#pg'+PC[0].slice(1)+')',j,o;
   var U=PC.filter(function(c,i){return PC.indexOf(c)==i});
   o='<svg viewBox="0 0 200 210" role="img" aria-label="'+names[seed.t]+', estágio '+stage+'"><defs>'
@@ -368,7 +369,7 @@ function renderPlots(){
     }else if(p){
       var q=cfg(i),el=n-p.last,wait=Math.max(0,q.cool-el),th=el>Math.max(q.cool,q.limit*.6),r=Math.min(1,el/q.limit);
       var wl=r>.6?Math.round((r-.6)/.4*4)/4:0;
-      svg=draw(p.seed,p.stage,wl,st.soils[i]);
+      svg=draw(p.seed,p.stage,wl,st.soils[i],'p'+i);
       dis=wait>0&&p.stage>0;lbl=dis?fmt(wait):'Regar';if(!dis)rd++;
       lvl=Math.round((1-r)*20)*5;col=lvl>50?'var(--ok)':lvl>25?'var(--mid)':'var(--bad)';
       if(p.lost){line='Voltou ao zero. Regue!';cls='warn'}
@@ -423,7 +424,7 @@ function renderHerb(){
   var g=document.createElement('div');g.className='hg';
   ks.forEach(function(k){
     var e=st.herb[k],c=document.createElement('div');c.className='hc';
-    c.innerHTML=draw({t:e.t,g:e.g,f:e.f,k:e.k||'#f2c94c',p:e.p||6,l:e.l||3,pc:e.pc,cr:e.cr,y:e.y,sh:e.sh,sz:e.sz},4,0,2);
+    c.innerHTML=draw({t:e.t,g:e.g,f:e.f,k:e.k||'#f2c94c',p:e.p||6,l:e.l||3,pc:e.pc,cr:e.cr,y:e.y,sh:e.sh,sz:e.sz},4,0,2,'h'+ks.indexOf(k));
     var nm=document.createElement('div');nm.textContent=(e.n||names[e.t])+(e.h?' ✦':'');nm.style.fontWeight='700';
     var r=document.createElement('div');r.className='star';r.textContent='★'.repeat(Math.min(5,(e.r||STARS[e.t]||1)+(e.h?1:0)));
     c.appendChild(nm);c.appendChild(r);g.appendChild(c);
@@ -484,7 +485,7 @@ function renderLab(){
   var sa=labA!==''?st.plots[+labA].seed:null,sb=labB!==''?st.plots[+labB].seed:null;
   function slot(cur,other,seed,isB,cb){
     var w=document.createElement('div'),ic=document.createElement('div'),s=document.createElement('select'),o=document.createElement('option');
-    w.className='slot';ic.className='slotic';ic.innerHTML=seed?draw(seed,4,0,2):'<span class="mute">?</span>';
+    w.className='slot';ic.className='slotic';ic.innerHTML=seed?draw(seed,4,0,2,isB?'lb':'la'):'<span class="mute">?</span>';
     o.value='';o.textContent='Escolher';s.appendChild(o);
     av.forEach(function(i){
       var oo=document.createElement('option'),sd=st.plots[i].seed,why='';
@@ -503,7 +504,7 @@ function renderLab(){
   row.appendChild(slot(labB,labA,sb,true,function(v){labB=v;renderLab()}));
   var eq=document.createElement('span');eq.className='op';eq.textContent='=';row.appendChild(eq);
   var ok=sa&&sb&&!canCross(sa,sb),rs=document.createElement('div');rs.className='slot';
-  var ric=document.createElement('div');ric.className='slotic';ric.innerHTML=ok?draw(childOf(sa,sb),4,0,2):'<span class="mute">?</span>';rs.appendChild(ric);row.appendChild(rs);
+  var ric=document.createElement('div');ric.className='slotic';ric.innerHTML=ok?draw(childOf(sa,sb),4,0,2,'lc'):'<span class="mute">?</span>';rs.appendChild(ric);row.appendChild(rs);
   L.appendChild(row);
   var b=document.createElement('button');b.textContent='Cruzar';b.style.cssText='width:100%;margin-top:10px';b.disabled=!ok;
   b.onclick=function(){cross(+labA,+labB)};L.appendChild(b);

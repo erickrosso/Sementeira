@@ -73,7 +73,9 @@ label.btn input{position:absolute;inset:0;width:100%;height:100%;opacity:0;curso
 .hg{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:8px}
 .hc{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:6px;text-align:center;font-size:12px}
 .hc.q{opacity:.5}.hc svg{max-height:84px}.star{color:var(--mid);letter-spacing:1px}
-.ms{padding:10px 0;border-top:1px solid var(--line)}.ms:first-child{border-top:0}
+.ms{padding:10px 0;border-top:1px solid var(--line)}
+.mb{width:104px;padding:8px 0;font-size:14px;flex:none;text-align:center}
+.mp{width:104px;text-align:right;flex:none}.ms:first-child{border-top:0}
 .hb{display:flex;gap:2px;align-items:center}
 .gd{font-size:15px;filter:grayscale(1);opacity:.55;border-radius:8px}
 .gd.on{filter:none;opacity:1;background:var(--accl)}
@@ -535,11 +537,11 @@ function renderMissions(){
   MS.slice().sort(function(a,b){return rk(a)-rk(b)}).forEach(function(m){
     var v=Math.min(m.v(),m.g),done=v>=m.g,cl=!!st.claimed[m.id],d=document.createElement('div');d.className='ms';
     var top=document.createElement('div');top.className='row';top.style.cssText='justify-content:space-between;flex-wrap:nowrap';
-    var l=document.createElement('span');l.textContent=(cl?'✓ ':'')+m.t;if(cl)l.className='mute';top.appendChild(l);
+    var l=document.createElement('span');l.textContent=(cl?'✓ ':'')+m.t;if(cl)l.className='mute';l.style.cssText='flex:1;min-width:0';top.appendChild(l);
     if(done&&!cl){
-      nb++;var b=document.createElement('button');b.textContent='Resgatar 🌱';
+      nb++;var b=document.createElement('button');b.textContent='Resgatar 🌱';b.className='mb';
       b.onclick=function(){st.claimed[m.id]=true;st.seeds.push(randomSeed());save();say('Missão cumprida! Semente de recompensa.');render()};top.appendChild(b);
-    }else if(!cl){var pr=document.createElement('span');pr.className='mute';pr.textContent=v+'/'+m.g;top.appendChild(pr)}
+    }else if(!cl){var pr=document.createElement('span');pr.className='mute mp';pr.textContent=v+'/'+m.g;top.appendChild(pr)}
     d.appendChild(top);
     var bar=document.createElement('div'),i=document.createElement('i');bar.className='bar';bar.style.marginTop='6px';
     i.style.width=(v/m.g*100)+'%';i.style.background=done?'var(--ok)':'var(--acc)';bar.appendChild(i);d.appendChild(bar);M.appendChild(d);

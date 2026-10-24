@@ -661,7 +661,7 @@ var ESP=[
  {nm:'Figueira',g:['Ficus'],n:/figueira/i,y:'fruto',col:'#7a4a6a'},
  {nm:'Oliveira',g:['Olea'],n:/oliveira/i,y:'fruto',col:'#5a6a2a'},
  {nm:'Amoreira',g:['Morus'],n:/amoreira/i,y:'fruto',col:'#5a2a4a'},
- {nm:'Romãzeira',g:['Punica'],n:/rom[ãa]/i,y:'fruto',col:'#c0283a'},
+ {nm:'Romãzeira',g:['Punica'],n:/romãzeira|^romã$/i,y:'fruto',col:'#c0283a'},
  {nm:'Mamoeiro',g:['Carica'],n:/mamoeiro/i,y:'fruto',col:'#f0b040'},
  {nm:'Cafeeiro',g:['Coffea'],n:/cafeeiro/i,y:'fruto',col:'#c0283a'},
  {nm:'Ipê-amarelo',g:['Handroanthus','Tabebuia'],n:/ipê/i,y:'flor',col:'#f2c230'},
@@ -685,7 +685,7 @@ var ESP=[
  {nm:'Samambaia',t:'samambaia',g:['Nephrolepis','Pteris'],n:/samambaia/i,s:'arqueada',r:2},
  {nm:'Avenca',t:'samambaia',g:['Adiantum','Asplenium','Platycerium'],n:/avenca|chifre-de-veado|ninho/i,s:'ramificada',r:2},
  {nm:'Hortelã',t:'erva',g:['Mentha','Ocimum','Lavandula','Rosmarinus'],n:/hortelã|manjericão|lavanda|alecrim/i,s:'arbusto',r:1},
- {nm:'Cebolinha',t:'erva',g:['Allium','Petroselinum','Cymbopogon'],n:/cebolinha|salsa|capim-limão|alho/i,s:'tufo',r:1},
+ {nm:'Cebolinha',t:'erva',g:['Allium','Petroselinum','Cymbopogon'],n:/cebolinha|salsa|capim-limão|^alho/i,s:'tufo',r:1},
  {nm:'Trevo',t:'erva',g:['Trifolium','Portulaca','Oxalis'],n:/trevo|beldroega|onze-horas|azedinha/i,s:'rasteira',r:1}
 ];
 var SHAPES={flor:['margarida','rosa','estrela','tulipa','girassol'],cacto:['coluna','bola','raquete'],suculenta:['roseta','aloe','jade'],samambaia:['arqueada','ramificada'],erva:['rasteira','arbusto','tufo']};
@@ -764,9 +764,12 @@ $('fileCam').onchange=onPhoto;
 
 function rnd(a){return a[Math.floor(Math.random()*a.length)]}
 function randomSeed(){
-  var s=randomSeed0();
-  if(s.t=='arvore'){var e=ESP[Math.floor(Math.random()*ESP.length)];s.cr=e.c||'folhosa';s.y=e.y;s.n=e.nm;if(e.col)s.f=e.col}
-  else{var a=SHAPES[s.t];if(a)s.sh=rnd(a);s.sz=+(.9+Math.random()*.25).toFixed(2)}
+  var s=randomSeed0(),L=ESP.filter(function(e){return (e.t||'arvore')==s.t}),e;
+  if(L.length){
+    e=rnd(L);s.n=e.nm;
+    if(s.t=='arvore'){s.cr=e.c||'folhosa';s.y=e.y;if(e.col)s.f=e.col}
+    else{s.sh=e.s;s.sz=e.sz||+(.9+Math.random()*.25).toFixed(2);if(e.r)s.r=e.r}
+  }else{var a=SHAPES[s.t];if(a)s.sh=rnd(a);s.sz=+(.9+Math.random()*.25).toFixed(2)}
   return s;
 }
 function randomSeed0(){var t=rnd(['flor','flor','flor','arvore','erva','cacto','suculenta','samambaia']);return{t:t,g:rnd(['#4a8f4f','#3f8f4a','#5aa05a','#2f7a4a','#6aa84f']),f:(t=='flor'||t=='cacto'||t=='suculenta')?rnd(['#e84a7f','#f2994a','#9b6bdf','#e8d34a','#e5534b','#5b9be8','#f08ac0']):'#9bc98a',k:rnd(['#f2c94c','#8a4b2a']),p:5+Math.floor(Math.random()*6),l:2+Math.floor(Math.random()*3)}}
@@ -809,6 +812,15 @@ showTab();
 if(location.hash.length>10){var h=location.hash;if(receive(h)){tab='sementes';showTab()}}
 if(!st.seeds.length&&!st.plots.some(Boolean)&&location.hash.length<=10){for(var q=0;q<3;q++)st.seeds.push(randomSeed());save()}
 
+function fixSeed(sd){
+  if(!sd||sd.t!='arvore'||!sd.n)return;
+  var e=ESP.filter(function(x){return x.t&&x.nm==sd.n})[0];
+  if(e){sd.t=e.t;sd.sh=e.s;sd.sz=e.sz||1;if(e.r)sd.r=e.r;delete sd.cr;delete sd.y}
+}
+st.seeds.forEach(fixSeed);
+st.plots.forEach(function(p){if(p)fixSeed(p.seed||(p.plant&&p.plant.seed))});
+Object.keys(st.herb).forEach(function(k){fixSeed(st.herb[k])});
+save();
 st.plots.forEach(function(p){if(p&&!p.locked&&p.seed&&(p.adult||p.stage==4))herbAdd(p.seed)});
 check();render();
 setInterval(function(){check();tend();renderPlots();renderHerb();renderLab();renderMissions()},1000);

@@ -202,7 +202,7 @@ function bloom(cx,cy,PC,sh,k,ck){
       +'<ellipse cx="'+cx+'" cy="'+(cy-12*k)+'" rx="'+(6.5*k)+'" ry="'+(14*k)+'" fill="'+f(P>>1)+'"/>';
   }
   if(sh=='rosa'){s+=petals(cx,cy,PC,13*k,8*k,0)+petals(cx,cy,PC,8*k,5.5*k,180/P);cr=4*k}
-  else if(sh=='margarida'){s+=petals(cx,cy,PC,17*k,2.8*k,0);cr=8*k}
+  else if(sh=='margarida'){s+=petals(cx,cy,PC,16*k,3.6*k,0);cr=8*k}
   else if(sh=='estrela'){s+=petals(cx,cy,PC,10*k,5.5*k,0,'dia');cr=5*k}
   else if(sh=='girassol'){s+=petals(cx,cy,PC,13*k,4.5*k,0)+petals(cx,cy,PC,11*k,4.2*k,180/P);cr=12*k;cc='#5a3a1c'}
   else s+=petals(cx,cy,PC,15*k,(P>8?5:7)*k,0);
@@ -242,10 +242,10 @@ function succ(seed,stage,wl,gi,PC){
     }
     if(sh=='raquete'){
       var sc=[0,.5,.7,.9,1][stage]*sz;
-      [[0,0,1],[-24,-34,.8],[24,-40,.75]].slice(0,stage>=3?3:stage>=2?2:1).forEach(function(p){
+      [[0,0,1],[-17,-38,.8],[17,-44,.75]].slice(0,stage>=3?3:stage>=2?2:1).forEach(function(p){
         s+='<ellipse cx="'+(100+p[0]*sc)+'" cy="'+(188-26*sc+p[1]*sc)+'" rx="'+(17*sc*p[2])+'" ry="'+(26*sc*p[2])+'" fill="'+gi+'" stroke="rgba(0,0,0,.15)"/>';
       });
-      if(stage==4)s+=bloom(100-24*sc,188-80*sc,PC,'estrela',.7*sz,ck);
+      if(stage==4)s+=bloom(100-17*sc,188-84*sc,PC,'estrela',.7*sz,ck);
       return '<g transform="rotate('+Math.round(wl*6)+' 100 188)">'+s+'</g>';
     }
     var bh=[0,26,50,74,90][stage]*sz,ay=188-bh*.62,ah=bh*.34;

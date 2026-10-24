@@ -94,7 +94,8 @@ label.btn input{position:absolute;inset:0;width:100%;height:100%;opacity:0;curso
   <h2 style="margin-top:6px">Suas sementes</h2>
   <div class="card">
     <p class="mute" style="margin-bottom:10px">Fotografe uma planta para ganhar uma semente parecida com ela.</p>
-    <div class="row" style="margin-bottom:6px"><label class="btn">Foto da planta<input type="file" id="file" accept="image/*"></label>
+    <div class="row" style="margin-bottom:6px"><label class="btn">📷 Tirar foto<input type="file" id="fileCam" accept="image/*" capture="environment"></label>
+    <label class="btn ghost">🖼️ Escolher do celular<input type="file" id="file" accept="image/*"></label>
     <button class="ghost" id="rand">Sementes aleatórias</button></div>
     <p id="pnc" class="mute" style="font-size:12px;margin-bottom:6px" hidden>Identificação de plantas com apoio do Pl@ntNet (my.plantnet.org).</p>
     <p id="modelStatus" class="mute" style="margin-bottom:10px">A foto é identificada pelo Pl@ntNet.</p>
@@ -514,7 +515,7 @@ async function plantnet(img){
   }catch(e){return {err:'rede ou CORS ('+(e&&e.message?e.message:e)+')'}}
 }
 $('pnc').hidden=!(PN.proxy||PN.key);
-$('file').onchange=async function(e){
+var onPhoto=async function(e){
   var f=e.target.files&&e.target.files[0];e.target.value='';
   if(!f||busy)return;
   busy=true;setModelStatus('Analisando a foto com o Claude...');
@@ -545,6 +546,8 @@ $('file').onchange=async function(e){
   };
   img.src=u;
 };
+$('file').onchange=onPhoto;
+$('fileCam').onchange=onPhoto;
 
 function rnd(a){return a[Math.floor(Math.random()*a.length)]}
 function randomSeed(){var t=rnd(['flor','flor','flor','arvore','erva','cacto','suculenta','samambaia']);return{t:t,g:rnd(['#4a8f4f','#3f8f4a','#5aa05a','#2f7a4a','#6aa84f']),f:(t=='flor'||t=='cacto'||t=='suculenta')?rnd(['#e84a7f','#f2994a','#9b6bdf','#e8d34a','#e5534b','#5b9be8','#f08ac0']):'#9bc98a',k:rnd(['#f2c94c','#8a4b2a']),p:5+Math.floor(Math.random()*6),l:2+Math.floor(Math.random()*3)}}

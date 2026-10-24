@@ -74,6 +74,16 @@ label.btn input{position:absolute;inset:0;width:100%;height:100%;opacity:0;curso
 .hc{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:6px;text-align:center;font-size:12px}
 .hc.q{opacity:.5}.hc svg{max-height:84px}.star{color:var(--mid);letter-spacing:1px}
 .ms{padding:10px 0;border-top:1px solid var(--line)}.ms:first-child{border-top:0}
+.hb{display:flex;gap:2px;align-items:center}
+.gd{font-size:15px;filter:grayscale(1);opacity:.55;border-radius:8px}
+.gd.on{filter:none;opacity:1;background:var(--accl)}
+.gd:disabled{opacity:.25}
+.labrow{display:flex;gap:6px;align-items:center}
+.slot{display:flex;flex-direction:column;align-items:center;gap:4px;flex:1;min-width:0}
+.slot select{max-width:100%;width:100%;font-size:12px;padding:6px 4px}
+.slotic{width:64px;height:64px;display:flex;align-items:center;justify-content:center}
+.slotic svg{width:64px;max-height:64px}
+.op{font-size:20px;color:var(--mute)}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style>
 </head>
@@ -166,7 +176,18 @@ var names={flor:'Flor',arvore:'Árvore',erva:'Erva',cacto:'Cacto',suculenta:'Suc
 var SOILC=['#d6b36e','#b98f5a','#7a5538','#5b3d28','#3f2c1f'];
 function dk(c,t){return mixc(c,'#000000',t)}
 function lt(c,t){return mixc(c,'#ffffff',t)}
-function succ(seed,stage,wl,gi,pi){
+function pcOf(seed){if(seed.pc&&seed.pc.length)return seed.pc;var a=[],i;for(i=0;i<(seed.p||6);i++)a.push(seed.f);return a}
+function petals(cx,cy,PC,len,rx){
+  var s='',P=PC.length,j;
+  for(j=0;j<P;j++)s+='<ellipse cx="'+cx+'" cy="'+(cy-len)+'" rx="'+rx+'" ry="'+len+'" fill="url(#pg'+PC[j].slice(1)+')" opacity=".95" transform="rotate('+(j*360/P)+' '+cx+' '+cy+')"/>';
+  return s;
+}
+function dots(cx,cy,PC,R,r){
+  var s='',P=PC.length,j,a;
+  for(j=0;j<P;j++){a=j*2*Math.PI/P;s+='<circle cx="'+(cx+Math.cos(a)*R).toFixed(1)+'" cy="'+(cy+Math.sin(a)*R*.8).toFixed(1)+'" r="'+r+'" fill="url(#pg'+PC[j].slice(1)+')"/>'}
+  return s;
+}
+function succ(seed,stage,wl,gi,PC){
   var s='',k;
   if(seed.t=='cacto'){
     var bh=[0,26,50,74,90][stage],ay=188-bh*.62,ah=bh*.34;
@@ -175,23 +196,24 @@ function succ(seed,stage,wl,gi,pi){
       s+='<rect x="70" y="'+ay+'" width="14" height="'+ah+'" rx="7" fill="'+gi+'"/><rect x="76" y="'+(ay+ah-12)+'" width="18" height="12" rx="6" fill="'+gi+'"/>';
       s+='<rect x="116" y="'+(ay-8)+'" width="14" height="'+ah+'" rx="7" fill="'+gi+'"/><rect x="106" y="'+(ay+ah-20)+'" width="18" height="12" rx="6" fill="'+gi+'"/>';
     }
-    if(stage==4)s+='<circle cx="100" cy="'+(188-bh)+'" r="8" fill="'+pi+'"/>';
+    if(stage==4)s+=petals(100,188-bh,PC,9,3.5)+'<circle cx="100" cy="'+(188-bh)+'" r="5" fill="'+(seed.k||'#f2c94c')+'"/>';
     return s+'</g>';
   }
   var r=[0,14,22,30,36][stage],n=4+stage*2;
   for(k=0;k<n;k++)s+='<ellipse cx="100" cy="'+(182-r)+'" rx="'+(r*.38)+'" ry="'+r+'" fill="'+gi+'" opacity="'+(.95-wl*.35)+'" transform="rotate('+(-80+160*k/(n-1))+' 100 182)"/>';
-  if(stage==4)s+='<circle cx="100" cy="'+(182-r*1.1)+'" r="7" fill="'+pi+'"/>';
+  if(stage==4)s+=petals(100,182-r*1.1,PC,8,3)+'<circle cx="100" cy="'+(182-r*1.1)+'" r="4" fill="'+(seed.k||'#f2c94c')+'"/>';
   return s;
 }
 function draw(seed,stage,wl,so){
-  var G=seed.g,F=seed.f,sc=SOILC[so==null?2:so],gi='url(#lg'+G.slice(1)+')',pi='url(#pg'+F.slice(1)+')',j,o;
+  var G=seed.g,PC=pcOf(seed),sc=SOILC[so==null?2:so],gi='url(#lg'+G.slice(1)+')',pi='url(#pg'+PC[0].slice(1)+')',j,o;
+  var U=PC.filter(function(c,i){return PC.indexOf(c)==i});
   o='<svg viewBox="0 0 200 210" role="img" aria-label="'+names[seed.t]+', estágio '+stage+'"><defs>'
    +'<linearGradient id="lg'+G.slice(1)+'" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="'+lt(G,.3)+'"/><stop offset="1" stop-color="'+dk(G,.18)+'"/></linearGradient>'
-   +'<radialGradient id="pg'+F.slice(1)+'"><stop offset="0" stop-color="'+lt(F,.4)+'"/><stop offset="1" stop-color="'+F+'"/></radialGradient>'
+   +U.map(function(c){return '<radialGradient id="pg'+c.slice(1)+'"><stop offset="0" stop-color="'+lt(c,.4)+'"/><stop offset="1" stop-color="'+c+'"/></radialGradient>'}).join('')
    +'<linearGradient id="sg'+sc.slice(1)+'" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="'+lt(sc,.18)+'"/><stop offset="1" stop-color="'+dk(sc,.25)+'"/></linearGradient></defs>'
    +'<ellipse cx="100" cy="192" rx="72" ry="15" fill="url(#sg'+sc.slice(1)+')"/><ellipse cx="86" cy="188" rx="26" ry="4" fill="'+lt(sc,.25)+'" opacity=".5"/><g class="sway">';
-  if(stage==0)return o+'<ellipse cx="100" cy="183" rx="11" ry="7" fill="'+pi+'" stroke="'+dk(F,.3)+'"/><ellipse cx="97" cy="181" rx="4" ry="2.5" fill="'+lt(F,.6)+'" opacity=".7"/></g></svg>';
-  if(seed.t=='cacto'||seed.t=='suculenta')return o+succ(seed,stage,wl,gi,pi)+'</g></svg>';
+  if(stage==0)return o+'<ellipse cx="100" cy="183" rx="11" ry="7" fill="'+pi+'" stroke="'+dk(PC[0],.3)+'"/><ellipse cx="97" cy="181" rx="4" ry="2.5" fill="'+lt(PC[0],.6)+'" opacity=".7"/></g></svg>';
+  if(seed.t=='cacto'||seed.t=='suculenta')return o+succ(seed,stage,wl,gi,PC)+'</g></svg>';
   var H=[0,34,70,100,120][stage],dr=Math.round(wl*24),tx=100+dr,ty=186-H,tr=seed.t=='arvore';
   o+='<path d="M100 190 Q100 '+(186-H/2)+' '+tx+' '+ty+'" stroke="'+(tr?'#7a5538':dk(G,.25))+'" stroke-width="'+(tr?4+stage*2:3)+'" fill="none" stroke-linecap="round"/>';
   var n=Math.min(seed.l*2,stage*2+1);
@@ -200,14 +222,14 @@ function draw(seed,stage,wl,so){
     o+='<ellipse cx="'+(px+sd*13)+'" cy="'+py+'" rx="'+(8+stage*2.5)+'" ry="'+(4+stage)+'" fill="'+gi+'" transform="rotate('+(-rot)+' '+px+' '+py+')" opacity="'+(.97-wl*.3)+'"/>';
   }
   if(stage>=3&&seed.t!='samambaia'){
-    if(tr){[[0,0,30],[-24,10,22],[24,10,22],[0,-16,20]].forEach(function(c){o+='<circle cx="'+(tx+c[0])+'" cy="'+(ty+c[1])+'" r="'+(stage==3?c[2]*.6:c[2])+'" fill="'+gi+'"/>'})}
-    else if(stage==3)o+='<circle cx="'+tx+'" cy="'+(ty-4)+'" r="9" fill="'+pi+'"/>';
-    else{
-      var P=seed.p||6;
-      for(j=0;j<P;j++)o+='<ellipse cx="'+tx+'" cy="'+(ty-16)+'" rx="'+(P>8?5:7)+'" ry="'+(14+(j%2)*3)+'" fill="'+pi+'" opacity=".95" transform="rotate('+(j*360/P)+' '+tx+' '+ty+')"/>';
-      o+='<circle cx="'+tx+'" cy="'+ty+'" r="9" fill="'+(seed.k||'#f2c94c')+'"/><circle cx="'+(tx-2)+'" cy="'+(ty-2)+'" r="3" fill="#fff" opacity=".4"/>';
+    if(tr){
+      [[0,0,30],[-24,10,22],[24,10,22],[0,-16,20]].forEach(function(c){o+='<circle cx="'+(tx+c[0])+'" cy="'+(ty+c[1])+'" r="'+(stage==3?c[2]*.6:c[2])+'" fill="'+gi+'"/>'});
+      if(stage==4)o+=dots(tx,ty+6,PC,24,3.5);
     }
+    else if(stage==3)o+='<circle cx="'+tx+'" cy="'+(ty-4)+'" r="9" fill="'+pi+'"/>';
+    else o+=petals(tx,ty,PC,15,PC.length>8?5:7)+'<circle cx="'+tx+'" cy="'+ty+'" r="9" fill="'+(seed.k||'#f2c94c')+'"/><circle cx="'+(tx-2)+'" cy="'+(ty-2)+'" r="3" fill="#fff" opacity=".4"/>';
   }
+  if(stage==4&&seed.t=='samambaia')o+=dots(tx,ty,PC,12,3);
   return o+'</g></svg>';
 }
 /* ---- jogo ---- */
@@ -246,9 +268,9 @@ function renderPlots(){
       else if(th){line='Com sede!';cls='warn'}
       else line=p.stage==4?'Adulta · ciclo '+(p.cycles||0)+(p.rewarded?'':'/'+q.need):'Crescendo';
     }
-    var on=fx[i]>n;
+    var on=fx[i]>n,hasG=st.gardeners.some(function(g){return g.plot===i});
     h+='<div class="plot"><div class="ph"><span><b>Canteiro '+(i+1)+'</b> · '+sf(i).n.toLowerCase()+'</span>'
-      +(live?'<button class="x" data-a="x" data-i="'+i+'" aria-label="Arrancar planta do canteiro '+(i+1)+'">✕</button>':'')+'</div>'
+      +'<span class="hb">'+(!(p&&p.locked)?'<button class="x gd'+(hasG?' on':'')+'" data-a="g" data-i="'+i+'"'+(st.gardeners.length?'':' disabled')+' aria-label="Jardineiro no canteiro '+(i+1)+'" title="'+(st.gardeners.length?(hasG?'Tirar jardineiro':'Colocar jardineiro'):'Contrate um jardineiro')+'">🧑‍🌾</button>':'')+(live?'<button class="x" data-a="x" data-i="'+i+'" aria-label="Arrancar planta do canteiro '+(i+1)+'">✕</button>':'')+'</span></div>'
       +'<div class="sv'+(on?' pop':'')+'">'+svg+(on?'<div class="dr"><span>💧</span><span>💧</span><span>💧</span></div>':'')+'</div>'
       +(live?'<div class="bar" role="img" aria-label="Água '+lvl+'%"><i style="width:'+lvl+'%;background:'+col+'"></i></div><div class="stg" aria-label="Estágio '+p.stage+' de 4">'+'●'.repeat(p.stage)+'○'.repeat(4-p.stage)+' <span class="mute">'+names[p.seed.t]+'</span></div>':'')
       +'<p class="'+cls+'">'+line+'</p>'
@@ -282,7 +304,7 @@ var WX={sol:['☀️','sol'],chuva:['🌧️','chuva: plantas aguentam 3h a mais
 function weather(){var per=$('test').checked?4e4:3*36e5,now=Date.now(),h=(Math.imul(Math.floor(now/per),2654435761)>>>0)%100;return{k:h<45?'sol':h<70?'chuva':h<85?'seca':'geada',left:per-now%per}}
 function wmul(t){if(!t)return 1;var k=weather().k;if(k=='seca')return(t=='cacto'||t=='suculenta')?1:.7;if(k=='geada')return(t=='flor'||t=='samambaia'||t=='suculenta')?.75:1;return 1}
 /* ---- herbário ---- */
-function herbAdd(sd){var key=((sd.n||names[sd.t])+'|'+sd.t).toLowerCase();if(!st.herb[key])st.herb[key]={t:sd.t,n:sd.n||'',f:sd.f,g:sd.g,k:sd.k,p:sd.p,l:sd.l,h:sd.h?1:0}}
+function herbAdd(sd){var key=((sd.n||names[sd.t])+'|'+sd.t+(sd.h&&sd.pc?'|'+sd.pc.join(''):'')).toLowerCase();if(!st.herb[key])st.herb[key]={t:sd.t,n:sd.n||'',f:sd.f,g:sd.g,k:sd.k,p:sd.p,l:sd.l,pc:sd.pc,h:sd.h?1:0}}
 function markAdult(p){if(p.adult)return;p.adult=true;st.stats.adults++;herbAdd(p.seed)}
 var STARS={flor:1,erva:1,arvore:2,samambaia:2,suculenta:3,cacto:3},hsig='';
 function renderHerb(){
@@ -293,7 +315,7 @@ function renderHerb(){
   var g=document.createElement('div');g.className='hg';
   ks.forEach(function(k){
     var e=st.herb[k],c=document.createElement('div');c.className='hc';
-    c.innerHTML=draw({t:e.t,g:e.g,f:e.f,k:e.k||'#f2c94c',p:e.p||6,l:e.l||3},4,0,2);
+    c.innerHTML=draw({t:e.t,g:e.g,f:e.f,k:e.k||'#f2c94c',p:e.p||6,l:e.l||3,pc:e.pc},4,0,2);
     var nm=document.createElement('div');nm.textContent=(e.n||names[e.t])+(e.h?' ✦':'');nm.style.fontWeight='700';
     var r=document.createElement('div');r.className='star';r.textContent='★'.repeat(Math.min(5,(STARS[e.t]||1)+(e.h?1:0)));
     c.appendChild(nm);c.appendChild(r);g.appendChild(c);
@@ -320,14 +342,28 @@ function tend(){
 var labA='',labB='',lsig='';
 function xavail(){var a=[];st.plots.forEach(function(p,i){if(p&&!p.locked&&p.stage==4&&(p.cycles||0)>(p.cx||0))a.push(i)});return a}
 function mixc(a,b,t){var r='#',i;for(i=1;i<7;i+=2)r+=('0'+Math.round(parseInt(a.substr(i,2),16)*(1-t)+parseInt(b.substr(i,2),16)*t).toString(16)).slice(-2);return r}
+function near(a,b){var d=0,k,x;for(k=1;k<7;k+=2){x=parseInt(a.substr(k,2),16)-parseInt(b.substr(k,2),16);d+=x*x}return d<2500}
+function distinctC(arr){var o=[];arr.forEach(function(c){if(!o.some(function(x){return near(x,c)}))o.push(c)});return o}
+function maxed(sd){var pc=pcOf(sd);return distinctC(pc).length>=pc.length}
+function canCross(a,b){
+  if(a.t!=b.t)return 'tipo diferente';
+  if(maxed(a)||maxed(b))return 'cores no limite';
+  var u=distinctC(pcOf(a).concat(pcOf(b))).length;
+  if(u<=distinctC(pcOf(a)).length&&u<=distinctC(pcOf(b)).length)return 'mesmas cores';
+  return '';
+}
+function childOf(a,b){
+  var U=distinctC(pcOf(a).concat(pcOf(b))),P=Math.max(a.p||6,b.p||6),n=Math.min(U.length,P),pc=[],k,q,c;
+  for(k=0;k<n;k++){c=Math.floor(P/n)+(k<P%n?1:0);for(q=0;q<c;q++)pc.push(U[k])}
+  return {t:a.t,g:mixc(a.g,b.g,.5),f:pc[0],k:a.k,p:pc.length,l:Math.max(2,Math.min(4,Math.round(((a.l||3)+(b.l||3))/2))),
+    n:((a.n||names[a.t]).split(' ')[0]+' × '+(b.n||names[b.t]).split(' ')[0]).slice(0,30),h:1,pc:pc};
+}
 function cross(i,j){
-  var a=st.plots[i].seed,b=st.plots[j].seed,t=Math.random()<.12?rnd(TYPES):(Math.random()<.5?a.t:b.t),mu=Math.random()<.2;
-  var sd={t:t,g:mixc(a.g,b.g,.5),f:mu?rnd(['#e84a7f','#5b9be8','#9b6bdf','#f2994a']):mixc(a.f,b.f,.2+Math.random()*.6),k:rnd([a.k,b.k]),
-    p:Math.max(5,Math.min(10,Math.round((a.p+b.p)/2)+(Math.random()<.5?1:-1))),l:Math.max(2,Math.min(4,Math.round((a.l+b.l)/2))),
-    n:((a.n||names[a.t]).split(' ')[0]+' × '+(b.n||names[b.t]).split(' ')[0]).slice(0,30),h:1};
+  var a=st.plots[i].seed,b=st.plots[j].seed;
+  if(canCross(a,b))return;
   st.plots[i].cx=st.plots[i].cycles;st.plots[j].cx=st.plots[j].cycles;
-  st.seeds.push(sd);st.stats.cross++;labA=labB='';save();
-  say('Cruzamento feito! Nova semente híbrida'+(mu?' com mutação!':'.'));render();
+  st.seeds.push(childOf(a,b));st.stats.cross++;labA=labB='';save();
+  say('Cruzamento feito! Nova semente híbrida.');render();
 }
 function renderLab(){
   var av=xavail();
@@ -336,19 +372,33 @@ function renderLab(){
   var sg=av.join(',')+'|'+labA+'|'+labB;
   if(sg===lsig)return;lsig=sg;
   var L=$('lab');L.innerHTML='';
-  if(av.length<2){L.innerHTML='<p class="mute">Precisa de 2 plantas adultas com um ciclo de rega novo desde o último cruzamento.</p>';return}
-  function mk(cur,other,cb){
-    var s=document.createElement('select'),o=document.createElement('option');
+  if(av.length<2){L.innerHTML='<p class="mute">Precisa de 2 plantas adultas do mesmo tipo, com um ciclo de rega novo desde o último cruzamento.</p>';return}
+  var sa=labA!==''?st.plots[+labA].seed:null,sb=labB!==''?st.plots[+labB].seed:null;
+  function slot(cur,other,seed,isB,cb){
+    var w=document.createElement('div'),ic=document.createElement('div'),s=document.createElement('select'),o=document.createElement('option');
+    w.className='slot';ic.className='slotic';ic.innerHTML=seed?draw(seed,4,0,2):'<span class="mute">?</span>';
     o.value='';o.textContent='Escolher';s.appendChild(o);
-    av.forEach(function(i){var oo=document.createElement('option');oo.value=i;oo.textContent='Canteiro '+(i+1)+' · '+names[st.plots[i].seed.t];oo.disabled=String(i)===other;s.appendChild(oo)});
-    s.value=cur;s.onchange=function(){cb(s.value)};return s;
+    av.forEach(function(i){
+      var oo=document.createElement('option'),sd=st.plots[i].seed,why='';
+      if(String(i)===other)why='já escolhida';
+      else if(maxed(sd))why='cores no limite';
+      else if(isB&&sa)why=canCross(sa,sd);
+      else if(!isB&&sb)why=canCross(sd,sb);
+      oo.value=i;oo.textContent='Canteiro '+(i+1)+' · '+names[sd.t]+(why?' ('+why+')':'');oo.disabled=!!why;s.appendChild(oo);
+    });
+    s.value=cur;s.onchange=function(){cb(s.value)};
+    w.appendChild(ic);w.appendChild(s);return w;
   }
-  var row=document.createElement('div');row.className='row';
-  row.appendChild(mk(labA,labB,function(v){labA=v;renderLab()}));
-  row.appendChild(mk(labB,labA,function(v){labB=v;renderLab()}));
-  var b=document.createElement('button');b.textContent='Cruzar';b.disabled=!(labA!==''&&labB!=='');
-  b.onclick=function(){cross(+labA,+labB)};
-  row.appendChild(b);L.appendChild(row);
+  var row=document.createElement('div');row.className='labrow';
+  row.appendChild(slot(labA,labB,sa,false,function(v){labA=v;renderLab()}));
+  var x=document.createElement('span');x.className='op';x.textContent='×';row.appendChild(x);
+  row.appendChild(slot(labB,labA,sb,true,function(v){labB=v;renderLab()}));
+  var eq=document.createElement('span');eq.className='op';eq.textContent='=';row.appendChild(eq);
+  var ok=sa&&sb&&!canCross(sa,sb),rs=document.createElement('div');rs.className='slot';
+  var ric=document.createElement('div');ric.className='slotic';ric.innerHTML=ok?draw(childOf(sa,sb),4,0,2):'<span class="mute">?</span>';rs.appendChild(ric);row.appendChild(rs);
+  L.appendChild(row);
+  var b=document.createElement('button');b.textContent='Cruzar';b.style.cssText='width:100%;margin-top:10px';b.disabled=!ok;
+  b.onclick=function(){cross(+labA,+labB)};L.appendChild(b);
 }
 /* ---- missões ---- */
 function herbN(){return Object.keys(st.herb).length}
@@ -392,16 +442,9 @@ function renderGardeners(){
   G.innerHTML='';
   st.gardeners.forEach(function(g,k){
     var d=document.createElement('div');d.className='seed';
-    var lab=document.createElement('span');lab.className='grow';lab.textContent='Jardineiro '+(k+1);
-    var sel=document.createElement('select');sel.setAttribute('aria-label','Canteiro do jardineiro '+(k+1));
-    var o=document.createElement('option');o.value='';o.textContent='Parado';sel.appendChild(o);
-    st.plots.forEach(function(p,i){
-      var oo=document.createElement('option'),busyBy=st.gardeners.some(function(h,j){return j!=k&&h.plot===i});
-      oo.value=i;oo.textContent='Canteiro '+(i+1)+(busyBy?' (ocupado)':'');oo.disabled=busyBy;sel.appendChild(oo);
-    });
-    sel.value=g.plot==null?'':String(g.plot);
-    sel.onchange=function(){g.plot=sel.value===''?null:+sel.value;save();render()};
-    d.appendChild(lab);d.appendChild(sel);G.appendChild(d);
+    var ic=document.createElement('span');ic.textContent='🧑‍🌾';ic.style.fontSize='24px';
+    var lab=document.createElement('span');lab.className='grow';lab.textContent='Jardineiro '+(k+1)+' · '+(g.plot==null?'parado':'Canteiro '+(g.plot+1));
+    d.appendChild(ic);d.appendChild(lab);G.appendChild(d);
   });
   var m=document.createElement('p');m.className='mute';m.style.marginTop='8px';
   if(first&&lvl<5){m.textContent='O primeiro jardineiro (grátis) chega no nível 5. Você está no nível '+lvl+'.';G.appendChild(m);return}
@@ -410,8 +453,8 @@ function renderGardeners(){
   b.disabled=!first&&!test;
   b.onclick=function(){st.gardeners.push({plot:null});save();render()};
   G.appendChild(b);
-  if(!first){m.textContent='Pagamento real só no app. No modo teste a compra é simulada.';G.appendChild(m)}
-  else{m.textContent='Cada jardineiro rega sozinho o canteiro escolhido. Essas regas não contam como ciclo.';G.appendChild(m)}
+  m.textContent=(first?'':'Pagamento real só no app. No modo teste a compra é simulada. ')+'Toque no 🧑‍🌾 de um canteiro para colocar o jardineiro nele (toque de novo para tirar). Essas regas não contam como ciclo.';
+  G.appendChild(m);
 }
 function render(){sig='';hsig='';lsig='';msig='';renderPlots();renderSeeds();renderGardeners();renderHerb();renderLab();renderMissions()}
 function plant(i){
@@ -451,6 +494,12 @@ $('plots').onclick=function(e){
   var b=e.target.closest('button');if(!b)return;
   var i=+b.dataset.i;
   if(b.dataset.a=='w')water(i);
+  else if(b.dataset.a=='g'){
+    var gi=st.gardeners.findIndex(function(g){return g.plot===i});
+    if(gi>=0)st.gardeners[gi].plot=null;
+    else if(st.gardeners.length){var fr=st.gardeners.findIndex(function(g){return g.plot==null});if(fr<0)fr=0;st.gardeners[fr].plot=i}
+    save();render();
+  }
   else if(b.dataset.a=='x'){
     var p=st.plots[i];
     if(!p||p.locked)return;
@@ -560,7 +609,7 @@ function dec(t){
     t=t.replace(/-/g,'+').replace(/_/g,'/');while(t.length%4)t+='=';
     var s=JSON.parse(atob(t));
     if(!s||!/^(flor|arvore|erva|cacto|suculenta|samambaia)$/.test(s.t)||!/^#[0-9a-f]{6}$/i.test(s.g)||!/^#[0-9a-f]{6}$/i.test(s.f)||!/^#[0-9a-f]{6}$/i.test(s.k))return null;
-    return {t:s.t,g:s.g,f:s.f,k:s.k,p:Math.max(5,Math.min(10,+s.p|0)),l:Math.max(2,Math.min(4,+s.l|0)),n:String(s.n||'').slice(0,30),h:s.h?1:0};
+    return {t:s.t,g:s.g,f:s.f,k:s.k,p:Math.max(5,Math.min(10,+s.p|0)),l:Math.max(2,Math.min(4,+s.l|0)),n:String(s.n||'').slice(0,30),h:s.h?1:0,pc:(Array.isArray(s.pc)?s.pc.filter(function(c){return /^#[0-9a-f]{6}$/i.test(c)}).slice(0,10):[])};
   }catch(e){return null}
 }
 function share(i,row){

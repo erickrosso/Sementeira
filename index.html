@@ -54,8 +54,8 @@ label.btn input{position:absolute;inset:0;width:100%;height:100%;opacity:0;curso
 .grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));grid-auto-rows:1fr;gap:10px;margin-top:10px}
 .plot{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:8px;display:flex;flex-direction:column;gap:5px}
 .ph{display:flex;justify-content:space-between;align-items:center;font-size:12px;color:var(--mute)}.ph b{color:var(--ink)}
-.x{background:transparent;border:0;color:var(--mute);padding:2px 6px;font-size:15px;line-height:1.2;font-weight:400}
-.x.arm{background:var(--bad);color:#fff;border-radius:8px;font-size:11px;font-weight:700}
+.x{background:transparent;border:0;color:var(--mute);padding:0;font-size:15px;line-height:1;font-weight:400;width:30px;height:30px;display:inline-flex;align-items:center;justify-content:center;flex:none}
+.x.arm{background:var(--bad);color:#fff;border-radius:8px;font-size:11px;font-weight:700;width:58px}
 .sv{position:relative}.sv svg{max-height:130px}
 .bar{height:7px;border-radius:4px;background:var(--line);overflow:hidden}
 .bar i{display:block;height:100%;border-radius:4px;transition:width .4s}
@@ -91,7 +91,7 @@ label.btn input{position:absolute;inset:0;width:100%;height:100%;opacity:0;curso
 </style>
 </head>
 <body>
-<header class="top"><b>🌱 Sementeira</b><span id="lvl"></span><span id="sc"></span></header>
+<header class="top"><b>🌱 Sementeira</b><span id="lvl"></span><span id="sc"></span><button id="snd" class="x" aria-label="Som ambiente" aria-pressed="false" style="font-size:18px">🔇</button></header>
 <main>
 <section id="t-jardim">
   <div id="sky" class="sky sol"><span id="wi" class="wi">☀️</span><p id="weather"></p></div>
@@ -385,6 +385,7 @@ function renderPlots(){
   });
   if(h!==sig){sig=h;$('plots').innerHTML=h}
   var w=weather();
+  if(AU.on)setAmbience(w.k);
   $('weather').textContent='Clima: '+WX[w.k][1]+' · muda em '+fmt(w.left);
   $('wi').textContent=WX[w.k][0];$('sky').className='sky '+w.k;
   $('lvl').textContent='Nível '+(c.d+1);
@@ -611,7 +612,7 @@ $('plots').onclick=function(e){
     var p=st.plots[i];
     if(!p||p.locked)return;
     var ad=p.adult||p.stage==4||p.rewarded||(p.cycles||0)>0;
-    if(!ad&&pullArm!==i){pullArm=i;b.textContent='Perder semente?';b.className='x arm';setTimeout(function(){if(pullArm===i){pullArm=null;b.textContent='✕';b.className='x'}},4000);return}
+    if(!ad&&pullArm!==i){pullArm=i;b.textContent='Perder?';b.className='x arm';say('A semente será perdida. Toque de novo no botão vermelho para confirmar.','warn');renderPlots();setTimeout(function(){if(pullArm===i){pullArm=null;b.textContent='✕';b.className='x'}},4000);return}
     pullArm=null;
     if(ad){st.seeds.push(p.seed);say('Planta arrancada. A semente voltou ao inventário.')}
     else say('Planta arrancada antes de ficar adulta. A semente foi perdida.','warn');
@@ -801,6 +802,105 @@ function receive(t){
   $('status').textContent='Semente recebida.';$('status').className='mute';return true;
 }
 $('recvBtn').onclick=function(){receive($('recv').value)};
+/* ---- som ambiente por clima (Web Audio, sem arquivos de áudio) ---- */
+var AU={ctx:null,on:false,layer:null};
+function rr(a,b){return a+Math.random()*(b-a)}
+function audioInit(){
+  if(AU.ctx)return true;
+  var C=window.AudioContext||window.webkitAudioContext;
+  if(!C)return false;
+  var c=AU.ctx=new C(),n=c.createBuffer(1,c.sampleRate*2,c.sampleRate),d=n.getChannelData(0),i;
+  for(i=0;i<d.length;i++)d[i]=Math.random()*2-1;
+  AU.noise=n;AU.master=c.createGain();AU.master.gain.value=0;AU.master.connect(c.destination);
+  return true;
+}
+function tone(f,dur,type,vol,dest,att){
+  var c=AU.ctx,t=c.currentTime,o=c.createOscillator(),g=c.createGain();
+  att=att||.02;o.type=type;o.frequency.value=f;
+  g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(vol,t+att);g.gain.exponentialRampToValueAtTime(.0001,t+dur);
+  o.connect(g);g.connect(dest);o.start(t);o.stop(t+dur+.1);
+}
+function bird(o){
+  var c=AU.ctx,t=c.currentTime,x=c.createOscillator(),g=c.createGain(),f=rr(2600,3400);
+  x.type='sine';x.frequency.setValueAtTime(f,t);x.frequency.linearRampToValueAtTime(f*1.35,t+.1);
+  g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(.025,t+.02);g.gain.exponentialRampToValueAtTime(.0001,t+.14);
+  x.connect(g);g.connect(o);x.start(t);x.stop(t+.2);
+}
+function noiseSrc(dest,type,freq,q,vol){
+  var c=AU.ctx,s=c.createBufferSource(),f=c.createBiquadFilter(),g=c.createGain();
+  s.buffer=AU.noise;s.loop=true;f.type=type;f.frequency.value=freq;f.Q.value=q;g.gain.value=vol;
+  s.connect(f);f.connect(g);g.connect(dest);s.start();return {s:s,f:f,g:g};
+}
+function every(L,fn,a,b){
+  var h=setTimeout(function go(){if(L.dead)return;fn();h=setTimeout(go,rr(a,b)*1000)},rr(0,a)*1000);
+  L.stops.push(function(){clearTimeout(h)});
+}
+function pick(A){return A[Math.floor(rr(0,A.length))]}
+var SC={
+  sol:function(L,o){
+    var P=[261.63,293.66,329.63,392,440,523.25,587.33];
+    every(L,function(){tone(pick([130.81,196]),8,'sine',.05,o,2);tone(329.63,8,'sine',.03,o,2)},6,8);
+    every(L,function(){tone(pick(P),2.2,'triangle',.05,o)},1.2,3);
+    every(L,function(){var k=Math.floor(rr(2,4)),i;for(i=0;i<k;i++)setTimeout(function(){if(!L.dead)bird(o)},i*160)},4,9);
+  },
+  chuva:function(L,o){
+    L.src.push(noiseSrc(o,'bandpass',1400,.6,.22).s,noiseSrc(o,'highpass',5000,.7,.05).s);
+    every(L,function(){tone(110,10,'sine',.05,o,3);tone(130.81,10,'sine',.03,o,3)},8,10);
+    every(L,function(){tone(pick([220,261.63,293.66,329.63,392]),3,'triangle',.035,o)},2.5,5);
+    every(L,function(){
+      var t=noiseSrc(o,'lowpass',160,.7,0),n=AU.ctx.currentTime;
+      t.g.gain.setValueAtTime(0,n);t.g.gain.linearRampToValueAtTime(.45,n+.6);t.g.gain.exponentialRampToValueAtTime(.0001,n+5);
+      setTimeout(function(){try{t.s.stop()}catch(e){}},5500);
+    },28,55);
+  },
+  seca:function(L,o){
+    var w=noiseSrc(o,'bandpass',500,1.2,.14);L.src.push(w.s);
+    every(L,function(){w.f.frequency.setTargetAtTime(rr(280,950),AU.ctx.currentTime,1.5)},3,5);
+    every(L,function(){tone(98,30,'sine',.04,o,4);tone(146.83,30,'sine',.025,o,4)},24,28);
+    every(L,function(){tone(pick([196,220,246.94,261.63,293.66,329.63]),2.6,'triangle',.05,o,.01)},2,5);
+  },
+  geada:function(L,o){
+    L.src.push(noiseSrc(o,'highpass',3200,.7,.035).s,noiseSrc(o,'bandpass',700,.8,.03).s);
+    every(L,function(){var f=pick([523.25,587.33,659.25,783.99,880,1046.5,1174.66]);tone(f,4.5,'sine',.04,o,.01);tone(f*2,3,'sine',.012,o,.01)},1.5,4);
+    every(L,function(){tone(196,12,'sine',.035,o,3);tone(293.66,12,'sine',.025,o,3);tone(392,12,'sine',.02,o,3)},9,11);
+  }
+};
+function stopLayer(L){
+  if(!L)return;
+  L.dead=true;L.stops.forEach(function(f){f()});
+  var c=AU.ctx;L.g.gain.cancelScheduledValues(c.currentTime);L.g.gain.setTargetAtTime(0,c.currentTime,.8);
+  setTimeout(function(){L.src.forEach(function(s){try{s.stop()}catch(e){}});try{L.g.disconnect()}catch(e){}},4000);
+}
+function setAmbience(k){
+  if(!AU.ctx||!AU.on||(AU.layer&&AU.layer.k==k))return;
+  stopLayer(AU.layer);
+  var c=AU.ctx,g=c.createGain(),L={k:k,g:g,stops:[],src:[],dead:false};
+  g.gain.value=0;g.connect(AU.master);g.gain.setTargetAtTime(1,c.currentTime,1);
+  SC[k](L,g);AU.layer=L;
+}
+function showSound(){var b=$('snd');b.textContent=AU.on?'🔊':'🔇';b.setAttribute('aria-pressed',AU.on?'true':'false')}
+function toggleSound(){
+  if(!audioInit())return;
+  AU.on=!AU.on;st.sound=AU.on;save();
+  var c=AU.ctx;if(c.resume)c.resume();
+  AU.master.gain.setTargetAtTime(AU.on?.6:0,c.currentTime,.4);
+  if(AU.on)setAmbience(weather().k);else{stopLayer(AU.layer);AU.layer=null}
+  showSound();
+}
+$('snd').onclick=toggleSound;
+if(!(window.AudioContext||window.webkitAudioContext))$('snd').hidden=true;
+document.addEventListener('visibilitychange',function(){
+  if(!AU.ctx||!AU.on)return;
+  if(document.hidden){if(AU.ctx.suspend)AU.ctx.suspend()}else if(AU.ctx.resume)AU.ctx.resume();
+});
+if(st.sound){
+  var once=function(e){
+    if(e.target.closest&&e.target.closest('#snd'))return;
+    document.removeEventListener('pointerdown',once);
+    if(st.sound&&!AU.on)toggleSound();
+  };
+  document.addEventListener('pointerdown',once);
+}
 var tab='jardim';
 function showTab(){
   ['jardim','sementes','herb','missoes'].forEach(function(k){$('t-'+k).hidden=k!=tab});

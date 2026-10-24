@@ -51,7 +51,7 @@ label.btn input{position:absolute;inset:0;width:100%;height:100%;opacity:0;curso
 @keyframes rain{to{background-position:-12px 40px}}
 @keyframes tw{50%{opacity:.2}}
 #status{margin:8px 2px 0;min-height:22px}
-.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));grid-auto-rows:1fr;gap:10px;margin-top:10px}
 .plot{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:8px;display:flex;flex-direction:column;gap:5px}
 .ph{display:flex;justify-content:space-between;align-items:center;font-size:12px;color:var(--mute)}.ph b{color:var(--ink)}
 .x{background:transparent;border:0;color:var(--mute);padding:2px 6px;font-size:15px;line-height:1.2;font-weight:400}
@@ -60,7 +60,7 @@ label.btn input{position:absolute;inset:0;width:100%;height:100%;opacity:0;curso
 .bar{height:7px;border-radius:4px;background:var(--line);overflow:hidden}
 .bar i{display:block;height:100%;border-radius:4px;transition:width .4s}
 .stg{font-size:12px;letter-spacing:2px;color:var(--acc)}.stg span{letter-spacing:0;font-size:12px}
-.plot p{font-size:12px;min-height:30px}
+.plot p{font-size:12px;flex:1;min-height:30px;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
 .go{width:100%;padding:9px 6px}
 .sway{transform-origin:100px 188px;animation:sway 4s ease-in-out infinite}
 @keyframes sway{50%{transform:rotate(1.6deg)}}
@@ -85,7 +85,7 @@ label.btn input{position:absolute;inset:0;width:100%;height:100%;opacity:0;curso
 .slotic svg{width:64px;max-height:64px}
 .op{font-size:20px;color:var(--mute)}
 .nm{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.sub{font-size:11px;color:var(--mute);margin-top:-2px}
+.sub{font-size:11px;color:var(--mute);margin-top:-2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .ph{gap:4px}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style>

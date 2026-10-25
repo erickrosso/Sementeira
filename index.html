@@ -75,7 +75,10 @@ label.btn input{position:absolute;inset:0;width:100%;height:100%;opacity:0;curso
 .hc.q{opacity:.5}.hc svg{max-height:84px}.star{color:var(--mid);letter-spacing:1px}
 .ms{padding:10px 0;border-top:1px solid var(--line)}
 .mb{width:104px;padding:8px 0;font-size:14px;flex:none;text-align:center}
-.mp{width:104px;text-align:right;flex:none}.ms:first-child{border-top:0}
+.mp{width:104px;text-align:right;flex:none}
+.brow{display:flex;gap:6px}
+.brow .go{flex:1;width:auto}
+.fz{flex:none;width:42px;padding:9px 0;font-size:16px;background:transparent;color:var(--acc)}.ms:first-child{border-top:0}
 .hb{display:flex;gap:2px;align-items:center}
 .gd{font-size:15px;filter:grayscale(1);opacity:.55;border-radius:8px}
 .gd.on{filter:none;opacity:1;background:var(--accl)}
@@ -93,7 +96,7 @@ label.btn input{position:absolute;inset:0;width:100%;height:100%;opacity:0;curso
 </style>
 </head>
 <body>
-<header class="top"><b>🌱 Sementeira</b><span id="lvl"></span><span id="sc"></span><button id="snd" class="x" aria-label="Som ambiente" aria-pressed="false" style="font-size:18px">🔇</button></header>
+<header class="top"><b>🌱 Sementeira</b><span id="lvl"></span><span id="rs"></span><span id="sc"></span><button id="snd" class="x" aria-label="Som ambiente" aria-pressed="false" style="font-size:18px">🔇</button></header>
 <main>
 <section id="t-jardim">
   <div id="sky" class="sky sol"><span id="wi" class="wi">☀️</span><p id="weather"></p></div>
@@ -102,16 +105,14 @@ label.btn input{position:absolute;inset:0;width:100%;height:100%;opacity:0;curso
   <div id="plots" class="grid"></div>
   <h2>Jardineiros</h2>
   <div class="card" id="gardens"></div>
-  <p class="mute" style="margin-top:14px"><label><input type="checkbox" id="test"> Modo teste (tempo acelerado)</label></p>
-  <p style="margin-top:6px"><button class="ghost small" id="reset">Zerar jogo (teste)</button></p>
+  <h2>Loja</h2>
+  <div class="card" id="shop"></div>
 </section>
 <section id="t-sementes" hidden>
   <h2 style="margin-top:6px">Suas sementes</h2>
   <div class="card">
     <p class="mute" style="margin-bottom:10px">Fotografe uma planta para ganhar uma semente parecida com ela.</p>
-    <div class="row" style="margin-bottom:6px"><label class="btn">📷 Tirar foto<input type="file" id="fileCam" accept="image/*" capture="environment"></label>
-    <label class="btn ghost">🖼️ Escolher do celular<input type="file" id="file" accept="image/*"></label>
-    <button class="ghost" id="rand">Sementes aleatórias</button></div>
+    <div class="row" style="margin-bottom:6px"><label class="btn">📷 Tirar foto<input type="file" id="fileCam" accept="image/*" capture="environment"></label></div>
     <p id="pnc" class="mute" style="font-size:12px;margin-bottom:6px" hidden>Identificação de plantas com apoio do Pl@ntNet (my.plantnet.org).</p>
     <p id="modelStatus" class="mute" style="margin-bottom:10px">A foto é identificada pelo Pl@ntNet.</p>
     <div id="seeds"></div>
@@ -136,6 +137,7 @@ label.btn input{position:absolute;inset:0;width:100%;height:100%;opacity:0;curso
 </nav>
 <script>
 (function(){
+var TEST=false;
 var KEY='sementeira-v1', st={seeds:[],plots:[null]};
 try{var s=localStorage.getItem(KEY);if(s)st=JSON.parse(s)}catch(e){}
 if(!st.seeds)st.seeds=[];
@@ -147,7 +149,7 @@ function save(){try{localStorage.setItem(KEY,JSON.stringify(st))}catch(e){}}
 function $(i){return document.getElementById(i)}
 var SOILS=[{n:'Árido',f:.45},{n:'Seco',f:.7},{n:'Normal',f:1},{n:'Úmido',f:1.4},{n:'Encharcado',f:2}],TF={flor:1,erva:.7,arvore:1.5,cacto:2.2,suculenta:1.8,samambaia:.6};
 function sf(i){var v=st.soils[i];return SOILS[v==null?2:v]}
-function cfg(i){var t=$('test').checked,p=i==null?null:st.plots[i],d=Math.max(0,st.plots.length-1),m=p&&p.seed?sf(i).f*TF[p.seed.t]:1,ef=Math.min(1,.0625*Math.pow(1.6,d)),cool=Math.max((t?3e3:4*36e5)*ef*m,t?1500:9e5),lim=t?25e3:24*36e5;return{cool:cool,limit:Math.max(cool*1.5,lim*m*Math.pow(.88,d)*wmul(p&&p.seed?p.seed.t:null))+(p&&p.seed&&weather().k=='chuva'?(t?12e3:3*36e5):0),d:d,need:3+d}}
+function cfg(i){var t=TEST,p=i==null?null:st.plots[i],d=Math.max(0,st.plots.length-1),m=p&&p.seed?sf(i).f*TF[p.seed.t]:1,ef=Math.min(1,.0625*Math.pow(1.6,d)),cool=Math.max((t?3e3:4*36e5)*ef*m,t?1500:9e5),lim=t?25e3:24*36e5;return{cool:cool,limit:Math.max(cool*1.5,lim*m*Math.pow(.88,d)*wmul(p&&p.seed?p.seed.t:null))+(p&&p.seed&&weather().k=='chuva'?(t?12e3:3*36e5):0),d:d,need:3+d}}
 function hex(r,g,b){return '#'+[r,g,b].map(function(v){return Math.round(v).toString(16).padStart(2,'0')}).join('')}
 
 /* ---- foto -> semente ---- */
@@ -384,7 +386,7 @@ function renderPlots(){
       +'<div class="sv'+(on?' pop':'')+'">'+svg+(on?'<div class="dr"><span>💧</span><span>💧</span><span>💧</span></div>':'')+'</div>'
       +(live?'<div class="bar" role="img" aria-label="Água '+lvl+'%"><i style="width:'+lvl+'%;background:'+col+'"></i></div><div class="stg" aria-label="Estágio '+p.stage+' de 4">'+'●'.repeat(p.stage)+'○'.repeat(4-p.stage)+'</div>':'')
       +'<p class="'+cls+'">'+line+'</p>'
-      +(live?'<button class="go" data-a="w" data-i="'+i+'"'+(dis?' disabled':'')+'>'+lbl+'</button>':'')+'</div>';
+      +(live?'<div class="brow"><button class="go" data-a="w" data-i="'+i+'"'+(dis?' disabled':'')+'>'+lbl+'</button><button class="fz" data-a="f" data-i="'+i+'"'+((st.fert>0&&p.stage<4)?'':' disabled')+' aria-label="Usar adubo" title="Usar adubo">🌿</button></div>':'')+'</div>';
   });
   if(h!==sig){sig=h;$('plots').innerHTML=h}
   var w=weather();
@@ -392,6 +394,7 @@ function renderPlots(){
   $('weather').textContent='Clima: '+WX[w.k][1]+' · muda em '+fmt(w.left);
   $('wi').textContent=WX[w.k][0];$('sky').className='sky '+w.k;
   $('lvl').textContent='Nível '+(c.d+1);
+  $('rs').textContent='🪙 '+(st.coins||0)+' · 🌿 '+(st.fert||0);
   var ab=$('all');ab.textContent='Regar todos ('+rd+')';ab.disabled=!rd;
   var sb=$('status');
   if(flash&&n<flashUntil){sb.textContent=flash[0];sb.className=flash[1]}
@@ -412,7 +415,7 @@ function renderSeeds(){
 }
 /* ---- clima ---- */
 var WX={sol:['☀️','sol'],chuva:['🌧️','chuva: plantas aguentam 3h a mais sem água'],seca:['🏜️','seca: plantas aguentam menos'],geada:['❄️','geada: flores, samambaias e suculentas sofrem']};
-function weather(){var per=$('test').checked?4e4:3*36e5,now=Date.now(),h=(Math.imul(Math.floor(now/per),2654435761)>>>0)%100;return{k:h<45?'sol':h<70?'chuva':h<85?'seca':'geada',left:per-now%per}}
+function weather(){var per=TEST?4e4:3*36e5,now=Date.now(),h=(Math.imul(Math.floor(now/per),2654435761)>>>0)%100;return{k:h<45?'sol':h<70?'chuva':h<85?'seca':'geada',left:per-now%per}}
 function wmul(t){if(!t)return 1;var k=weather().k;if(k=='seca')return(t=='cacto'||t=='suculenta')?1:.7;if(k=='geada')return(t=='flor'||t=='samambaia'||t=='suculenta')?.75:1;return 1}
 /* ---- herbário ---- */
 function herbAdd(sd){var key=((sd.n||names[sd.t])+'|'+sd.t+(sd.h&&sd.pc?'|'+sd.pc.join(''):'')).toLowerCase();if(!st.herb[key])st.herb[key]={t:sd.t,n:sd.n||'',f:sd.f,g:sd.g,k:sd.k,p:sd.p,l:sd.l,pc:sd.pc,cr:sd.cr,y:sd.y,sh:sd.sh,sz:sd.sz,r:sd.r,h:sd.h?1:0}}
@@ -549,7 +552,7 @@ function renderMissions(){
   var bd=$('badgeM');bd.textContent=nb;bd.hidden=!nb;
 }
 function renderGardeners(){
-  var G=$('gardens'),lvl=cfg().d+1,test=$('test').checked,first=st.gardeners.length==0,n=st.gardeners.length;
+  var G=$('gardens'),lvl=cfg().d+1,first=st.gardeners.length==0,n=st.gardeners.length,coins=st.coins||0,cost=25*n;
   var busy=st.gardeners.filter(function(g){return g.plot!=null}).length;
   G.innerHTML='';
   var row=document.createElement('div');row.className='row';row.style.cssText='justify-content:space-between;flex-wrap:nowrap';
@@ -559,19 +562,55 @@ function renderGardeners(){
   var m=document.createElement('p');m.className='mute';m.style.marginTop='8px';
   if(first&&lvl<5){m.textContent='O primeiro jardineiro (grátis) chega no nível 5. Você está no nível '+lvl+'.'}
   else{
-    var b=document.createElement('button');b.textContent=first?'Contratar (grátis)':'Contratar (pago)';
-    b.disabled=!first&&!test;
-    b.onclick=function(){st.gardeners.push({plot:null});save();render()};
+    var b=document.createElement('button');b.textContent=first?'Contratar (grátis)':'Contratar ('+cost+' 🪙)';
+    b.disabled=!first&&coins<cost;
+    b.onclick=function(){if(!first){if((st.coins||0)<cost)return;st.coins-=cost}st.gardeners.push({plot:null});save();render()};
     row.appendChild(b);
-    m.textContent=(first?'':'Pagamento real só no app. No modo teste a compra é simulada. ')+'Toque no 🧑‍🌾 de um canteiro para colocar o jardineiro nele (toque de novo para tirar). Essas regas não contam como ciclo.';
+    m.textContent='Toque no 🧑‍🌾 de um canteiro para colocar o jardineiro nele (toque de novo para tirar). Essas regas não contam como ciclo.';
   }
   G.appendChild(row);G.appendChild(m);
 }
-function render(){sig='';hsig='';lsig='';msig='';renderPlots();renderSeeds();renderGardeners();renderHerb();renderLab();renderMissions()}
+function render(){sig='';hsig='';lsig='';msig='';renderPlots();renderSeeds();renderGardeners();renderShop();renderHerb();renderLab();renderMissions()}
 function plant(i){
   var f=st.plots.indexOf(null);if(f<0)return;
   st.plots[f]={seed:st.seeds[i],stage:0,last:Date.now(),lost:false,cycles:0,rewarded:false};
   st.seeds.splice(i,1);save();render();
+}
+/* ---- colheita, moedas e loja ---- */
+var PRICES={adubo:8,semente:20};
+function rollDrop(p){
+  var sd=p.seed,rar=sd.r||STARS[sd.t]||1,fruit=sd.t=='arvore'&&sd.y=='fruto',out=[],n;
+  if(Math.random()<.7){n=1+(rar>=3?1:0);st.coins=(st.coins||0)+n;out.push('+'+n+' '+(fruit?'🍎':'🌸'))}
+  if(((sd.t=='arvore'&&!fruit)||sd.t=='samambaia'||Math.random()<.12)&&Math.random()<.5){st.fert=(st.fert||0)+1;out.push('+1 🌿')}
+  if(Math.random()<.03*rar){st.seeds.push(randomSeed());out.push('+1 🌱 semente extra')}
+  return out.length?'Colheita: '+out.join(' · ')+'.':'';
+}
+function fertilize(i){
+  var p=st.plots[i];
+  if(!p||p.locked||!(st.fert>0)||p.stage>=4)return;
+  p.stage++;if(p.stage==4)markAdult(p);
+  st.fert--;fx[i]=Date.now()+1300;save();say('Adubo aplicado: a planta cresceu um estágio.');render();
+}
+function buy(k){
+  var c=PRICES[k];
+  if((st.coins||0)<c)return;
+  st.coins-=c;
+  if(k=='adubo')st.fert=(st.fert||0)+1;else st.seeds.push(randomSeed());
+  save();say(k=='adubo'?'Adubo comprado.':'Semente aleatória comprada.');render();
+}
+function renderShop(){
+  var S=$('shop'),coins=st.coins||0;S.innerHTML='';
+  [['🌿','Adubo','Faz uma planta crescer um estágio.','adubo'],['🌱','Semente aleatória','Uma espécie sorteada.','semente']].forEach(function(it){
+    var d=document.createElement('div');d.className='seed';
+    var ic=document.createElement('span');ic.textContent=it[0];ic.style.fontSize='24px';
+    var lab=document.createElement('span');lab.className='grow';
+    var t=document.createElement('b');t.textContent=it[1];
+    var sub=document.createElement('div');sub.className='mute';sub.style.fontSize='12px';sub.textContent=it[2];
+    lab.appendChild(t);lab.appendChild(sub);
+    var b=document.createElement('button');b.className='mb';b.textContent=PRICES[it[3]]+' 🪙';b.disabled=coins<PRICES[it[3]];
+    b.onclick=function(){buy(it[3])};
+    d.appendChild(ic);d.appendChild(lab);d.appendChild(b);S.appendChild(d);
+  });
 }
 function adultCycle(i,p){
   var msg='';
@@ -584,6 +623,7 @@ function adultCycle(i,p){
       p.rewarded=true;st.plots.push(null);st.soils.push(Math.floor(Math.random()*5));st.seeds.push(randomSeed());
       msg='Novo canteiro de solo '+SOILS[st.soils[st.soils.length-1]].n.toLowerCase()+' e uma semente de presente! Nível '+(cfg().d+1)+'.';
     }
+  var dm=rollDrop(p);if(dm)msg=(msg?msg+' ':'')+dm;
   return msg;
 }
 function water(i){
@@ -605,6 +645,7 @@ $('plots').onclick=function(e){
   var b=e.target.closest('button');if(!b)return;
   var i=+b.dataset.i;
   if(b.dataset.a=='w')water(i);
+  else if(b.dataset.a=='f')fertilize(i);
   else if(b.dataset.a=='g'){
     var gi=st.gardeners.findIndex(function(g){return g.plot===i});
     if(gi>=0)st.gardeners[gi].plot=null;
@@ -622,15 +663,7 @@ $('plots').onclick=function(e){
     st.plots[i]=null;save();render();
   }
 };
-var rt=null;
-$('reset').onclick=function(){
-  var b=$('reset');
-  if(!rt){b.textContent='Toque de novo para zerar';rt=setTimeout(function(){rt=null;b.textContent='Zerar jogo (teste)'},4000);return}
-  clearTimeout(rt);rt=null;b.textContent='Zerar jogo (teste)';
-  st={seeds:[randomSeed(),randomSeed(),randomSeed()],plots:[null],soils:[2],pay:0,gardeners:[],herb:{},stats:{adults:0,cross:0},claimed:{}};
-  save();flash=null;say('Jogo zerado. Você ganhou 3 sementes.');render();
-};
-$('test').onchange=function(){check();render()};
+
 
 /* ---- reconhecimento da foto com o Claude ---- */
 var TYPES=['flor','arvore','erva','cacto','suculenta','samambaia'],busy=false;
@@ -763,7 +796,6 @@ var onPhoto=async function(e){
   };
   img.src=u;
 };
-$('file').onchange=onPhoto;
 $('fileCam').onchange=onPhoto;
 
 function rnd(a){return a[Math.floor(Math.random()*a.length)]}
@@ -777,7 +809,6 @@ function randomSeed(){
   return s;
 }
 function randomSeed0(){var t=rnd(['flor','flor','flor','arvore','erva','cacto','suculenta','samambaia']);return{t:t,g:rnd(['#4a8f4f','#3f8f4a','#5aa05a','#2f7a4a','#6aa84f']),f:(t=='flor'||t=='cacto'||t=='suculenta')?rnd(['#e84a7f','#f2994a','#9b6bdf','#e8d34a','#e5534b','#5b9be8','#f08ac0']):'#9bc98a',k:rnd(['#f2c94c','#8a4b2a']),p:5+Math.floor(Math.random()*6),l:2+Math.floor(Math.random()*3)}}
-$('rand').onclick=function(){for(var i=0;i<3;i++)st.seeds.push(randomSeed());save();render()};
 /* ---- enviar / receber ---- */
 function enc(s){return btoa(JSON.stringify(s)).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'')}
 function dec(t){
@@ -913,7 +944,7 @@ function showTab(){
 Array.prototype.forEach.call(document.querySelectorAll('.tabs button'),function(b){b.onclick=function(){tab=b.dataset.t;showTab()}});
 showTab();
 if(location.hash.length>10){var h=location.hash;if(receive(h)){tab='sementes';showTab()}}
-if(!st.seeds.length&&!st.plots.some(Boolean)&&location.hash.length<=10){for(var q=0;q<3;q++)st.seeds.push(randomSeed());save()}
+if(!st.seeds.length&&!st.plots.some(Boolean)&&location.hash.length<=10){for(var q=0;q<1;q++)st.seeds.push(randomSeed());save()}
 
 function fixSeed(sd){
   if(!sd||sd.t!='arvore'||!sd.n)return;

@@ -96,7 +96,7 @@ label.btn input{position:absolute;inset:0;width:100%;height:100%;opacity:0;curso
 </style>
 </head>
 <body>
-<header class="top"><b>🌱 Sementeira</b><span id="lvl"></span><span id="rs"></span><span id="sc"></span><button id="snd" class="x" aria-label="Som ambiente" aria-pressed="false" style="font-size:18px">🔇</button></header>
+<header class="top"><b>Sementeira</b><span id="lvl"></span><span id="rs"></span><span id="sc"></span><button id="snd" class="x" aria-label="Som ambiente" aria-pressed="false" style="font-size:18px">🔇</button></header>
 <main>
 <section id="t-jardim">
   <div id="sky" class="sky sol"><span id="wi" class="wi">☀️</span><p id="weather"></p></div>
@@ -403,7 +403,7 @@ function renderPlots(){
   $('weather').textContent='Clima: '+WX[w.k][1]+' · muda em '+fmt(w.left);
   $('wi').textContent=WX[w.k][0];$('sky').className='sky '+w.k;
   $('lvl').textContent='Nível '+(c.d+1)+(TEST?' ⚡':'');
-  $('rs').textContent='🪙 '+(st.coins||0)+' · 🌿 '+(st.fert||0);
+  $('rs').textContent='🪙 '+(st.coins||0);
   var ab=$('all');ab.textContent='Regar todos ('+rd+')';ab.disabled=!rd;
   var sb=$('status');
   if(flash&&n<flashUntil){sb.textContent=flash[0];sb.className=flash[1]}

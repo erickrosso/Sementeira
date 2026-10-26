@@ -534,16 +534,16 @@ function isBlue(c){var r=parseInt(c.substr(1,2),16),g=parseInt(c.substr(3,2),16)
 function adultsN(){return st.stats.adults}
 function crossN(){return st.stats.cross}
 var MS=[
- {id:'a3',t:'Cultive 3 plantas até a fase adulta',v:adultsN,g:3},
- {id:'h5',t:'Registre 5 espécies no herbário',v:herbN,g:5},
- {id:'x1',t:'Faça seu primeiro cruzamento',v:crossN,g:1},
- {id:'d1',t:'Cultive um cacto ou suculenta até adulta',v:function(){return herbHas(function(e){return e.t=='cacto'||e.t=='suculenta'})},g:1},
- {id:'b1',t:'Cultive uma flor azul até adulta',v:function(){return herbHas(function(e){return e.t=='flor'&&isBlue(e.f)})},g:1},
- {id:'l4',t:'Chegue a 4 canteiros',v:function(){return st.plots.length},g:4},
- {id:'y1',t:'Cultive um híbrido até a fase adulta',v:function(){return herbHas(function(e){return e.h})},g:1},
- {id:'a10',t:'Cultive 10 plantas até a fase adulta',v:adultsN,g:10},
- {id:'x4',t:'Faça 4 cruzamentos',v:crossN,g:4},
- {id:'h12',t:'Registre 12 espécies no herbário',v:herbN,g:12}
+ {id:'a3',rw:10,t:'Cultive 3 plantas até a fase adulta',v:adultsN,g:3},
+ {id:'h5',rw:15,t:'Registre 5 espécies no herbário',v:herbN,g:5},
+ {id:'x1',rw:10,t:'Faça seu primeiro cruzamento',v:crossN,g:1},
+ {id:'d1',rw:15,t:'Cultive um cacto ou suculenta até adulta',v:function(){return herbHas(function(e){return e.t=='cacto'||e.t=='suculenta'})},g:1},
+ {id:'b1',rw:15,t:'Cultive uma flor azul até adulta',v:function(){return herbHas(function(e){return e.t=='flor'&&isBlue(e.f)})},g:1},
+ {id:'l4',rw:20,t:'Chegue a 4 canteiros',v:function(){return st.plots.length},g:4},
+ {id:'y1',rw:20,t:'Cultive um híbrido até a fase adulta',v:function(){return herbHas(function(e){return e.h})},g:1},
+ {id:'a10',rw:30,t:'Cultive 10 plantas até a fase adulta',v:adultsN,g:10},
+ {id:'x4',rw:25,t:'Faça 4 cruzamentos',v:crossN,g:4},
+ {id:'h12',rw:40,t:'Registre 12 espécies no herbário',v:herbN,g:12}
 ],msig='';
 function renderMissions(){
   var sg=MS.map(function(m){return Math.min(m.v(),m.g)+(st.claimed[m.id]?'c':'')}).join(',');
@@ -555,9 +555,9 @@ function renderMissions(){
     var top=document.createElement('div');top.className='row';top.style.cssText='justify-content:space-between;flex-wrap:nowrap';
     var l=document.createElement('span');l.textContent=(cl?'✓ ':'')+m.t;if(cl)l.className='mute';l.style.cssText='flex:1;min-width:0';top.appendChild(l);
     if(done&&!cl){
-      nb++;var b=document.createElement('button');b.textContent='Resgatar 🌱';b.className='mb';
-      b.onclick=function(){st.claimed[m.id]=true;st.seeds.push(randomSeed());save();say('Missão cumprida! Semente de recompensa.');render()};top.appendChild(b);
-    }else if(!cl){var pr=document.createElement('span');pr.className='mute mp';pr.textContent=v+'/'+m.g;top.appendChild(pr)}
+      nb++;var b=document.createElement('button');b.textContent='🪙 +'+m.rw;b.className='mb';
+      b.onclick=function(){st.claimed[m.id]=true;st.coins=(st.coins||0)+m.rw;save();say('Missão cumprida! +'+m.rw+' 🪙.');render()};top.appendChild(b);
+    }else if(!cl){var pr=document.createElement('span');pr.className='mute mp';pr.textContent=v+'/'+m.g+' · 🪙'+m.rw;top.appendChild(pr)}
     d.appendChild(top);
     var bar=document.createElement('div'),i=document.createElement('i');bar.className='bar';bar.style.marginTop='6px';
     i.style.width=(v/m.g*100)+'%';i.style.background=done?'var(--ok)':'var(--acc)';bar.appendChild(i);d.appendChild(bar);M.appendChild(d);
@@ -598,8 +598,6 @@ function rollDrop(p){
   if(t=='erva'&&Math.random()<(w=='chuva'?.45:.3)){st.tonic=(st.tonic||0)+1;out.push('+1 🧪 tônico')}
   if((t=='cacto'||t=='suculenta')&&Math.random()<(w=='seca'?.65:.45)){st.gota=(st.gota||0)+1;out.push('+1 💧 gota')}
   if(((t=='arvore'&&!fruit)||t=='samambaia'||Math.random()<.12)&&Math.random()<(w=='chuva'?.65:.5)){st.fert=(st.fert||0)+1;out.push('+1 🌿 adubo')}
-  if(t=='samambaia'&&Math.random()<.1){st.seeds.push(randomSeed());out.push('+1 🌱 esporo (semente)')}
-  if(Math.random()<.03*rar){st.seeds.push(randomSeed());out.push('+1 🌱 semente extra')}
   if(w=='geada'&&Math.random()<.06){st.coins=(st.coins||0)+5;out.push('+5 🪙 cristal de gelo ❄️')}
   return out.length?'Colheita: '+out.join(' · ')+'.':'';
 }

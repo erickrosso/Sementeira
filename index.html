@@ -575,10 +575,14 @@ function renderGardeners(){
   var m=document.createElement('p');m.className='mute';m.style.marginTop='8px';
   if(first&&lvl<5){m.textContent='O primeiro jardineiro (grátis) chega no nível 5. Você está no nível '+lvl+'.'}
   else{
-    var b=document.createElement('button');b.textContent=first?'Contratar (grátis)':'Contratar ('+cost+' 🪙)';
+    var b=document.createElement('button');b.textContent='Contratar';
     b.disabled=!first&&coins<cost;
     b.onclick=function(){if(!first){if((st.coins||0)<cost)return;st.coins-=cost}st.gardeners.push({plot:null});save();render()};
-    row.appendChild(b);
+    var box=document.createElement('div'),pr=document.createElement('span');
+    box.style.cssText='display:flex;flex-direction:column;align-items:center;gap:2px;flex:none';
+    pr.style.cssText='font-size:12px;font-weight:700;color:'+(!first&&coins<cost?'var(--warn)':'var(--mute)');
+    pr.textContent=first?'Grátis':'🪙 '+cost;
+    box.appendChild(b);box.appendChild(pr);row.appendChild(box);
     m.textContent='Toque no 🧑‍🌾 de um canteiro para colocar o jardineiro nele (toque de novo para tirar). Essas regas não contam como ciclo.';
   }
   G.appendChild(row);G.appendChild(m);

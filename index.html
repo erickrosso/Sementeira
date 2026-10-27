@@ -587,7 +587,7 @@ function renderGardeners(){
   }
   G.appendChild(row);G.appendChild(m);
 }
-function render(){sig='';hsig='';lsig='';msig='';renderPlots();renderSeeds();renderGardeners();renderItems();renderShop();renderHerb();renderLab();renderMissions()}
+function render(){sig='';hsig='';lsig='';msig='';isig='';renderPlots();renderSeeds();renderGardeners();renderItems();renderShop();renderHerb();renderLab();renderMissions()}
 function plant(i){
   var f=st.plots.indexOf(null);if(f<0)return;
   st.plots[f]={seed:st.seeds[i],stage:0,last:Date.now(),lost:false,cycles:0,rewarded:false};
@@ -605,7 +605,10 @@ function rollDrop(p){
   if(w=='geada'&&Math.random()<.06){st.coins=(st.coins||0)+5;out.push('+5 🪙 cristal de gelo ❄️')}
   return out.length?'Colheita: '+out.join(' · ')+'.':'';
 }
+var isig='';
 function renderItems(){
+  var g=[st.fert,st.gota,st.pollen,st.tonic].map(function(x){return x||0}).join(',');
+  if(g===isig)return;isig=g;
   var I=$('items');I.innerHTML='';
   [['🌿','Adubo','fert','Botão 🌿 do canteiro: a planta cresce um estágio.'],
    ['💧','Gota','gota','No botão Regar: rega sem esperar o intervalo.'],
@@ -1026,7 +1029,7 @@ Object.keys(st.herb).forEach(function(k){fixSeed(st.herb[k])});
 save();
 st.plots.forEach(function(p){if(p&&!p.locked&&p.seed&&(p.adult||p.stage==4))herbAdd(p.seed)});
 check();render();
-setInterval(function(){check();tend();renderPlots();renderHerb();renderLab();renderMissions()},1000);
+setInterval(function(){check();tend();renderPlots();renderItems();renderHerb();renderLab();renderMissions()},1000);
 })();
 </script>
 </body>

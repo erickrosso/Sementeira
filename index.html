@@ -731,7 +731,7 @@ function shrink(img,max){
 function okHex(v){return typeof v=='string'&&/^#[0-9a-f]{6}$/i.test(v)}
 /* ---- Pl@ntNet (opcional: só funciona em hospedagem própria) ---- */
 var PN={proxy:'',key:'2b10a9zQ5MlJG9LldRHPubggzu'}; /* preencha 'proxy' (recomendado) ou 'key' (chave restrita ao seu domínio) */
-var FAM_FERN=['Pteridaceae','Polypodiaceae','Dryopteridaceae','Aspleniaceae','Blechnaceae','Nephrolepidaceae','Davalliaceae','Thelypteridaceae','Cyatheaceae','Lomariopsidaceae','Athyriaceae','Osmundaceae'];
+var FAM_FERN=['Pteridaceae','Polypodiaceae','Dryopteridaceae','Aspleniaceae','Blechnaceae','Nephrolepidaceae','Davalliaceae','Thelypteridaceae','Cyatheaceae','Lomariopsidaceae','Athyriaceae','Osmundaceae','Lygodiaceae','Marattiaceae','Equisetaceae','Lycopodiaceae','Dennstaedtiaceae'];
 var FAM_SUCC=['Crassulaceae','Aizoaceae','Asphodelaceae'];
 var FAM_TREE=['Pinaceae','Cupressaceae','Fagaceae','Betulaceae','Salicaceae','Arecaceae','Araucariaceae','Casuarinaceae','Lauraceae','Sapindaceae','Meliaceae','Anacardiaceae','Myrtaceae','Moraceae','Bignoniaceae'];
 /* ---- tabela de espécies (árvores): copa, o que dão e cor ---- */
@@ -772,7 +772,18 @@ var ESP=[
  {nm:'Avenca',t:'samambaia',g:['Adiantum','Asplenium','Platycerium'],n:/avenca|chifre-de-veado|ninho/i,s:'ramificada',r:2},
  {nm:'Hortelã',t:'erva',g:['Mentha','Ocimum','Lavandula','Rosmarinus'],n:/hortelã|manjericão|lavanda|alecrim/i,s:'arbusto',r:1},
  {nm:'Cebolinha',t:'erva',g:['Allium','Petroselinum','Cymbopogon'],n:/cebolinha|salsa|capim-limão|^alho/i,s:'tufo',r:1},
- {nm:'Trevo',t:'erva',g:['Trifolium','Portulaca','Oxalis'],n:/trevo|beldroega|onze-horas|azedinha/i,s:'rasteira',r:1}
+ {nm:'Trevo',t:'erva',g:['Trifolium','Portulaca','Oxalis'],n:/trevo|beldroega|onze-horas|azedinha/i,s:'rasteira',r:1},
+ {nm:'Corticeira',g:['Erythrina'],n:/corticeira|mulungu|eritrina|bico-de-papagaio/i,y:'flor',col:'#d8402e'},
+ {nm:'Flamboyant',g:['Delonix'],n:/flamboyant|flamboiã/i,y:'flor',col:'#e8402a'},
+ {nm:'Quaresmeira',g:['Tibouchina'],n:/quaresmeira|tibouchina/i,y:'flor',col:'#8a4bd0'},
+ {nm:'Paineira',g:['Ceiba','Chorisia'],n:/paineira|barriguda/i,y:'flor',col:'#e87aa6'},
+ {nm:'Sibipiruna',g:['Caesalpinia','Poincianella','Libidibia'],n:/sibipiruna/i,y:'flor',col:'#f2c230'},
+ {nm:'Resedá',g:['Lagerstroemia'],n:/resed[áa]|extremosa/i,y:'flor',col:'#d65aa0'},
+ {nm:'Magnólia',g:['Magnolia'],n:/magn[óo]lia/i,y:'flor',col:'#f3e3e8'},
+ {nm:'Aroeira',g:['Schinus','Myracrodruon'],n:/aroeira/i,y:'fruto',col:'#d84a4a'},
+ {nm:'Jatobá',g:['Hymenaea'],n:/jatob[áa]/i,y:'nada'},
+ {nm:'Cacto echinopsis',t:'cacto',g:['Echinopsis','Trichocereus','Lobivia'],n:/echinopsis/i,s:'bola',r:3},
+ {nm:'Flor-de-maio',t:'cacto',g:['Schlumbergera','Hatiora','Epiphyllum'],n:/flor-de-maio|dama-da-noite|schlumbergera/i,s:'raquete',r:3}
 ];
 var SHAPES={flor:['margarida','rosa','estrela','tulipa','girassol'],cacto:['coluna','bola','raquete'],suculenta:['roseta','aloe','jade'],samambaia:['arqueada','ramificada'],erva:['rasteira','arbusto','tufo']};
 var ALLSH=[].concat(SHAPES.flor,SHAPES.cacto,SHAPES.suculenta,SHAPES.samambaia,SHAPES.erva);
@@ -786,15 +797,21 @@ function espOf(gen,cn){
   for(i=0;i<ESP.length;i++){e=ESP[i];if(e.g.indexOf(gen)>=0||(cn||[]).some(function(x){return e.n.test(x)}))return e}
   return null;
 }
-var GEN_TREE=['Malus','Pyrus','Prunus','Citrus','Mangifera','Persea','Psidium','Eucalyptus','Quercus','Acer','Olea','Handroanthus','Tabebuia','Jacaranda','Annona','Carica','Theobroma','Coffea','Cocos','Syagrus','Roystonea','Pinus','Cedrus','Araucaria','Morus','Punica','Tamarindus'];
-var RE_TREE=/macieira|pereira|pessegueiro|ameixeira|cerejeira|laranjeira|limoeiro|tangerineira|mangueira|goiabeira|jabuticabeira|abacateiro|figueira|oliveira|amoreira|pinheiro|carvalho|cedro|ipê|palmeira|eucalipto|árvore|araucária/i;
-function mapType(fam,org,gen,cn){
-  if(fam=='Cactaceae')return 'cacto';
-  if(FAM_SUCC.indexOf(fam)>=0)return 'suculenta';
-  if(FAM_FERN.indexOf(fam)>=0)return 'samambaia';
-  if(FAM_TREE.indexOf(fam)>=0||GEN_TREE.indexOf(gen)>=0||(cn||[]).some(function(x){return RE_TREE.test(x)}))return 'arvore';
-  return (org=='flower'||org=='fruit')?'flor':'erva';
+var GEN_TREE=['Malus','Pyrus','Prunus','Citrus','Mangifera','Persea','Psidium','Eucalyptus','Corymbus','Quercus','Acer','Olea','Handroanthus','Tabebuia','Jacaranda','Annona','Carica','Theobroma','Coffea','Cocos','Syagrus','Roystonea','Pinus','Cedrus','Araucaria','Morus','Punica','Tamarindus','Erythrina','Delonix','Ceiba','Tibouchina','Schinus','Hymenaea','Senna','Cassia','Bauhinia','Inga','Pachira','Syzygium','Spathodea','Lagerstroemia','Magnolia','Platanus','Cedrela','Swietenia','Tectona','Salix','Populus','Betula','Fagus','Ulmus','Tilia','Fraxinus','Caesalpinia','Peltophorum','Pterocarpus','Anadenanthera','Albizia','Enterolobium','Tipuana','Cecropia','Terminalia','Ficus','Casuarina','Grevillea','Cinnamomum','Ocotea','Nectandra'];
+var RE_TREE=/macieira|pereira|pessegueiro|ameixeira|cerejeira|laranjeira|limoeiro|tangerineira|mangueira|goiabeira|jabuticabeira|abacateiro|figueira|oliveira|amoreira|pinheiro|carvalho|cedro|ipê|palmeira|eucalipto|árvore|araucária|corticeira|flamboyant|paineira|sibipiruna|quaresmeira|jatobá|aroeira|pau-brasil|pau-ferro|resedá|magnólia|plátano|salgueiro|bétula|faia|olmo|tília|freixo|cássia|jambeiro|castanheira|nogueira|seringueira|tamarindo|sapucaia|jequitibá|ingá|mulungu|coqueiro|tamareira|buriti|babaçu/i;
+var RE_CACT=/\bcact|cacto|mandacaru|xique-xique|opúntia|palma-forrageira/i;
+var RE_SUCC=/suculent|babosa|\baloe|echeveria|crássula|\bsedum|kalanchoe|haworthia|agave|rosa-de-pedra|espada-de-são-jorge/i;
+var RE_FERN=/samambaia|avenca|\bfeto\b|polipódio|chifre-de-veado|cavalinha/i;
+var GEN_SUCC=['Aloe','Haworthia','Gasteria','Echeveria','Sempervivum','Sedum','Graptopetalum','Crassula','Kalanchoe','Agave','Sansevieria'];
+function classify(fam,gen,cn){
+  var txt=(cn||[]).join(' | ');
+  if(fam=='Cactaceae'||RE_CACT.test(txt))return 'cacto';
+  if(FAM_SUCC.indexOf(fam)>=0||GEN_SUCC.indexOf(gen)>=0||RE_SUCC.test(txt))return 'suculenta';
+  if(FAM_FERN.indexOf(fam)>=0||RE_FERN.test(txt))return 'samambaia';
+  if(FAM_TREE.indexOf(fam)>=0||GEN_TREE.indexOf(gen)>=0||RE_TREE.test(txt))return 'arvore';
+  return null;
 }
+function mapType(fam,org,gen,cn){return classify(fam,gen,cn)||((org=='flower'||org=='fruit')?'flor':'erva')}
 async function plantnet(img){
   if(!PN.proxy&&!PN.key)return null;
   try{
@@ -807,10 +824,10 @@ async function plantnet(img){
     var j=await res.json(),r0=j.results&&j.results[0];
     if(!r0||r0.score<.1)return {rej:true};
     var sp=r0.species||{},fam=(sp.family&&sp.family.scientificNameWithoutAuthor)||'',po=j.predictedOrgans&&j.predictedOrgans[0],org=(po&&po.organ)||'';
-    var gen=(sp.genus&&sp.genus.scientificNameWithoutAuthor)||'',cn=sp.commonNames||[],es=espOf(gen,cn),t0=es?(es.t||'arvore'):mapType(fam,org,gen,cn),ex={},nm0=String(cn[0]||sp.scientificNameWithoutAuthor||'');
+    var gen=(sp.genus&&sp.genus.scientificNameWithoutAuthor)||String(sp.scientificNameWithoutAuthor||'').split(' ')[0],cn=sp.commonNames||[],es=espOf(gen,cn),t0=es?(es.t||'arvore'):mapType(fam,org,gen,cn),ex={},nm0=String(cn[0]||sp.scientificNameWithoutAuthor||'');
     if(t0=='arvore'){ex.cr=(es&&es.c)||CROWN_FAM[fam]||'folhosa';ex.y=es?es.y:(org=='flower'?'flor':'nada');if(es&&es.col)ex.yc=es.col}
     else{ex.sh=(es&&es.s)||FAM_SH[fam]||defShape(t0,nm0);ex.sz=(es&&es.sz)||defScale(nm0);if(es&&es.r)ex.r=es.r}
-    return {t:t0,cr:ex.cr,y:ex.y,yc:ex.yc,sh:ex.sh,sz:ex.sz,r:ex.r,n:String((sp.commonNames&&sp.commonNames[0])||sp.scientificNameWithoutAuthor||'').slice(0,30),score:r0.score};
+    return {t:t0,cr:ex.cr,y:ex.y,yc:ex.yc,sh:ex.sh,sz:ex.sz,r:ex.r,n:String((sp.commonNames&&sp.commonNames[0])||sp.scientificNameWithoutAuthor||'').slice(0,30),score:r0.score,fam:fam,gen:gen};
   }catch(e){return {err:'rede ou CORS ('+(e&&e.message?e.message:e)+')'}}
 }
 $('pnc').hidden=!(PN.proxy||PN.key);
@@ -835,7 +852,7 @@ var onPhoto=async function(e){
       seed.t=pn.t;seed.n=pn.n;if(pn.cr)seed.cr=pn.cr;if(pn.y)seed.y=pn.y;if(pn.yc)seed.f=pn.yc;if(pn.sh)seed.sh=pn.sh;if(pn.sz)seed.sz=pn.sz;if(pn.r)seed.r=pn.r;
       if(seed.t=='flor'&&seed.f=='#9bc98a')seed.f='#e84a7f';
       if(seed.t=='samambaia')seed.l=4;
-      setModelStatus('Pl@ntNet: '+(pn.n||names[pn.t])+' ('+Math.round(pn.score*100)+'%).');
+      setModelStatus('Pl@ntNet: '+(pn.n||names[pn.t])+' ('+Math.round(pn.score*100)+'%) · '+(pn.fam||'família ?')+' → '+names[pn.t]);
       st.seeds.push(seed);save();render();
       say('Nova semente criada: '+names[seed.t].toLowerCase()+'.');
     }catch(err){
@@ -996,9 +1013,12 @@ if(location.hash.length>10){var h=location.hash;if(receive(h)){tab='sementes';sh
 if(!st.seeds.length&&!st.plots.some(Boolean)&&location.hash.length<=10){for(var q=0;q<1;q++)st.seeds.push(randomSeed());save()}
 
 function fixSeed(sd){
-  if(!sd||sd.t!='arvore'||!sd.n)return;
-  var e=ESP.filter(function(x){return x.t&&x.nm==sd.n})[0];
-  if(e){sd.t=e.t;sd.sh=e.s;sd.sz=e.sz||1;if(e.r)sd.r=e.r;delete sd.cr;delete sd.y}
+  if(!sd||!sd.n)return;
+  var e=espOf('',[sd.n]),t=e?(e.t||'arvore'):classify('','',[sd.n]);
+  if(!t||t==sd.t)return;
+  sd.t=t;
+  if(t=='arvore'){sd.cr=(e&&e.c)||'folhosa';sd.y=e?e.y:'nada';if(e&&e.col)sd.f=e.col;delete sd.sh}
+  else{delete sd.cr;delete sd.y;sd.sh=(e&&e.s)||defShape(t,sd.n);sd.sz=(e&&e.sz)||sd.sz||defScale(sd.n);if(e&&e.r)sd.r=e.r}
 }
 st.seeds.forEach(fixSeed);
 st.plots.forEach(function(p){if(p)fixSeed(p.seed||(p.plant&&p.plant.seed))});
